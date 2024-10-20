@@ -1,0 +1,4 @@
+Party A 1000000
+Party B 500000
+Party C 250000
+Party R 100000
