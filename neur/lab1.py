@@ -16,81 +16,92 @@ eta = 0.5
 
 #Задача 1
 
-# random.seed(42)
-# neurons = [[random.uniform(-1, 1) for _ in range(2)] for _ in range(4)]
-#
-# def distance(v1, v2):
-#     return sum((v1[i] - v2[i]) ** 2 for i in range(len(v1)))
-#
-# for x in vectors:
-#     winner_idx = min(range(len(neurons)), key=lambda i: distance(neurons[i], x))
-#
-#     for j in range(len(neurons[winner_idx])):
-#         neurons[winner_idx][j] += eta * (x[j] - neurons[winner_idx][j])
-#
-# print("Веса нейронов после обучения для коэффициента обучения eta = "+f"{eta}")
-# for i, neuron in enumerate(neurons):
-#     print(f"Нейрон {i + 1}: {neuron}")
+print("=" * 100)
+print("Задача 1: WTA-обучение")
+print("=" * 100)
+
+random.seed(42)
+neurons = [[random.uniform(-1, 1) for _ in range(2)] for _ in range(4)]
+
+def distance(v1, v2):
+    return sum((v1[i] - v2[i]) ** 2 for i in range(len(v1)))
+
+for x in vectors:
+    winner_idx = min(range(len(neurons)), key=lambda i: distance(neurons[i], x))
+
+    for j in range(len(neurons[winner_idx])):
+        neurons[winner_idx][j] += eta * (x[j] - neurons[winner_idx][j])
+
+for i, neuron in enumerate(neurons):
+    print(f"Нейрон {i + 1}: {neuron}")
 
 
 # Задача 2
 
-# def initialize_weights(num_neurons, input_dim):
-#     weights = []
-#     for _ in range(num_neurons):
-#         neuron_weights = [random.uniform(-1, 1) for _ in range(input_dim)]
-#         norm = math.sqrt(sum(w ** 2 for w in neuron_weights))
-#         neuron_weights = [w / norm for w in neuron_weights]
-#         weights.append(neuron_weights)
-#     return weights
-#
-# def dot_product(v1, v2):
-#     return sum(x * y for x, y in zip(v1, v2))
-#
-# def train_wta(weights, input_vectors, eta, epochs, fine):
-#     num_neurons = len(weights)
-#     wins = [0] * num_neurons
-#
-#     for _ in range(epochs):
-#         for input_vector in input_vectors:
-#             norm = math.sqrt(sum(x ** 2 for x in input_vector))
-#             normalized_input = [x / norm for x in input_vector]
-#
-#             activations = [
-#                 dot_product(neuron_weights, normalized_input) * (1 - 0.1 * wins[i])
-#                 for i, neuron_weights in enumerate(weights)
-#             ]
-#
-#             winner_index = activations.index(max(activations))
-#
-#             if wins[winner_index] >= fine:
-#                 activations[winner_index] = float('-inf')
-#                 winner_index = activations.index(max(activations))
-#
-#             winner_weights = weights[winner_index]
-#             weights[winner_index] = [
-#                 w + eta * (x - w) for w, x in zip(winner_weights, normalized_input)
-#             ]
-#
-#             norm = math.sqrt(sum(w ** 2 for w in weights[winner_index]))
-#             weights[winner_index] = [w / norm for w in weights[winner_index]]
-#
-#             wins[winner_index] += 1
-#
-#     return weights
-#
-# num_neurons = 4
-# input_dim = 2
-# epochs = 100
-# fine = 10
-#
-# weights = initialize_weights(num_neurons, input_dim)
-# neurons = train_wta(weights, vectors, eta, epochs, fine)
-#
-# for i, neuron in enumerate(neurons):
-#     print(f"Нейрон {i + 1}: {neuron}")
+print("\n" + "=" * 100)
+print("Задача 2: WTA-обучение (Система штрафов)")
+print("=" * 100)
+
+def initialize_weights(num_neurons, input_dim):
+    weights = []
+    for _ in range(num_neurons):
+        neuron_weights = [random.uniform(-1, 1) for _ in range(input_dim)]
+        norm = math.sqrt(sum(w ** 2 for w in neuron_weights))
+        neuron_weights = [w / norm for w in neuron_weights]
+        weights.append(neuron_weights)
+    return weights
+
+def dot_product(v1, v2):
+    return sum(x * y for x, y in zip(v1, v2))
+
+def train_wta(weights, input_vectors, eta, epochs, fine):
+    num_neurons = len(weights)
+    wins = [0] * num_neurons
+
+    for _ in range(epochs):
+        for input_vector in input_vectors:
+            norm = math.sqrt(sum(x ** 2 for x in input_vector))
+            normalized_input = [x / norm for x in input_vector]
+
+            activations = [
+                dot_product(neuron_weights, normalized_input) * (1 - 0.1 * wins[i])
+                for i, neuron_weights in enumerate(weights)
+            ]
+
+            winner_index = activations.index(max(activations))
+
+            if wins[winner_index] >= fine:
+                activations[winner_index] = float('-inf')
+                winner_index = activations.index(max(activations))
+
+            winner_weights = weights[winner_index]
+            weights[winner_index] = [
+                w + eta * (x - w) for w, x in zip(winner_weights, normalized_input)
+            ]
+
+            norm = math.sqrt(sum(w ** 2 for w in weights[winner_index]))
+            weights[winner_index] = [w / norm for w in weights[winner_index]]
+
+            wins[winner_index] += 1
+
+    return weights
+
+num_neurons = 4
+input_dim = 2
+epochs = 100
+fine = 10
+
+weights = initialize_weights(num_neurons, input_dim)
+neurons = train_wta(weights, vectors, eta, epochs, fine)
+
+for i, neuron in enumerate(neurons):
+    print(f"Нейрон {i + 1}: {neuron}")
 
 # Задача 3
+
+print("\n" + "=" * 100)
+print("Задача 3: Правило Хебба")
+print("=" * 100)
 
 def sign(x):
     return 1 if x >= 0 else -1
@@ -118,4 +129,4 @@ weights1 = train_hebb(vectors, eta, epochs)
 weights2 = train_hebb(vectors, eta, epochs)
 
 print("Нейрон 1:", weights1)
-print("Нйрон 2:", weights2)
+print("Нейрон 2:", weights2)
