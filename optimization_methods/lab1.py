@@ -8,7 +8,7 @@ k = 0
 N = 2
 
 
-def f(x: int) -> float:
+def f(x: float) -> float:
     return x ** 2 + 6 * x + 13
 
 
@@ -38,21 +38,36 @@ while abs(b - a) > l:
     k += 1
     N += 2
 
-x = (a + b) / 2
-fx = f(x)
+x_min = (a + b) / 2
+fx_min = f(x_min)
 R = r(N)
 
-print(f"Количество итераций k = {k}")
-print(f"Индекс интервала неопределенности N = {N}")
-print(f"Интервал неопределенности L{N} = [{a}, {b}]")
-print(f"Точка минимума x* = {x}")
-print(f"Значение в точке минимума f(x*) = {fx}")
-print(f"Сходимость R = {R}")
+print("\nРезультаты оптимизации:")
+print("=" * 50)
+print(f"Количество итераций: {k}")
+print(f"Индекс интервала неопределенности: {N}")
+print(f"Интервал неопределенности L{N}: [{a:.4f}, {b:.4f}]")
+print(f"Точка минимума: x* = {x_min:.4f}")
+print(f"Значение функции в точке минимума: f(x*) = {fx_min:.4f}")
+print(f"Сходимость R = {R:.6f}")
+print("=" * 50)
 
+x_vals = [i for i in range(-6, 5)]
+y_vals = [f(i) for i in range(-6, 5)]
 
-x = [i for i in range(-6, 5)]
-y = [f(i) for i in range(-6, 5)]
+plt.style.use("seaborn-v0_8-darkgrid")
+plt.figure(figsize=(8, 5))
+plt.plot(x_vals, y_vals, label="f(x) = x² + 6x + 13", color="blue")
+plt.scatter(x_min, fx_min, color="red", zorder=3, label=f"Минимум (x* = {x_min:.4f})")
 
-plt.grid()
-plt.plot(x, y)
+plt.annotate(f"Минимум\n(x* = {x_min:.2f}, f(x*) = {fx_min:.2f})",
+             xy=(x_min, fx_min),
+             xytext=(x_min + 1, fx_min + 5),
+             arrowprops=dict(facecolor='black', arrowstyle="->"))
+
+plt.xlabel("x")
+plt.ylabel("f(x)")
+plt.title("График функции и точка минимума")
+plt.legend()
+plt.grid(True)
 plt.show()
