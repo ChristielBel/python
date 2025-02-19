@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная страница{% endblock %}
+
+{% block content %}
+    <h2>Космические станции</h2>
+    <ul>
+        {% for station in space_stations %}
+            <li>
+                <a href="{% url 'space_station_detail' pk=station.pk %}">{{ station.name }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'add_space_station' %}">Добавить космическую станцию</a>
+
+    <h2>Спутники</h2>
+    <ul>
+        {% for satellite in satellites %}
+            <li>
+                <a href="{% url 'satellite_detail' pk=satellite.pk %}">{{ satellite.name }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'add_satellite' %}">Добавить спутник</a>
+
+    <h2>Астронавты</h2>
+    <ul>
+        {% for astronaut in astronauts %}
+            <li>
+                <a href="{% url 'astronaut_detail' pk=astronaut.pk %}">{{ astronaut.name }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'add_astronaut' %}">Добавить астронавта</a>
+{% endblock %}
