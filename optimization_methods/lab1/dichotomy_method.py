@@ -28,7 +28,7 @@ def r(n):
 while abs(b - a) > l:
     k += 1
     N += 2
-    print(k)
+    print(f"k = {k:d}")
     yk = y()
     zk = z()
     fy = f(yk)
