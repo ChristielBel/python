@@ -29,7 +29,7 @@ zk = a + (F[N-1]/F[N])*(b-a)
 
 while k != (N - 3):
     k += 1
-    print(k)
+    print(f"k = {k:d}")
     fy = f(yk)
     fz = f(zk)
     print(f"y = {yk}, z = {zk}")
