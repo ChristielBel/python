@@ -21,7 +21,7 @@ zk = a + b - yk
 while abs(b - a) > l:
     k += 1
     N += 1
-    print(k)
+    print(f"k = {k:d}")
     fy = f(yk)
     fz = f(zk)
     print(f"y = {yk}, z = {zk}")
