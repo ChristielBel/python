@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 l = 0.5
 a = -6
 b = 4
-k = -1
-N = 1
+k = 0
+N = 2
 
 
 def f(x: float) -> float:
@@ -19,8 +19,6 @@ yk = a + ((3 - math.sqrt(5)) / 2) * (b - a)
 zk = a + b - yk
 
 while abs(b - a) > l:
-    k += 1
-    N += 1
     print(f"k = {k:d}")
     fy = f(yk)
     fz = f(zk)
@@ -34,8 +32,10 @@ while abs(b - a) > l:
         a = yk
         yk = zk
         zk = a + b - zk
-    print(f"L{N}[{a},{b}]")
+    print(f"L{k + 2}[{a},{b}]")
+    k += 1
 
+N = k + 1
 x_min = (a + b) / 2
 fx_min = f(x_min)
 R = 0.618 ** (N - 1)
