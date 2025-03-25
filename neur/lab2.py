@@ -1,12 +1,16 @@
+import math
 import random
 
-#Задача 1
+# Задача 1
 
 print("=" * 100)
 print("Задача 1")
 print("=" * 100)
+
+
 def relu(x):
     return max(0, x)
+
 
 def xor_relu(x1, x2):
     h1 = relu(x1 - x2)
@@ -14,104 +18,110 @@ def xor_relu(x1, x2):
     output = h1 + h2
     return round(output) % 2
 
+
 inputs = [(0, 0), (0, 1), (1, 0), (1, 1)]
 outputs = [xor_relu(x1, x2) for x1, x2 in inputs]
 
 for (x1, x2), y in zip(inputs, outputs):
     print(f"XOR({x1}, {x2}) = {y}")
 
-#Задача 2
+# Задача 2
 
 print("=" * 100)
 print("Задача 2")
 print("=" * 100)
 
-# Генерация случайных точек (x1, x2) в [0,1] × [0,1] и их классов
-def generate_data(num_points):
-    data = []
-    for _ in range(num_points):
+import random
+
+learning_rate = 0.5
+epoches = 10
+
+
+def generate_data(n):
+    dots = []
+    for _ in range(n):
         x1, x2 = random.random(), random.random()
-        label = 1 if x1 > x2 else -1  # Разделяем по x1 - x2 = 0
-        data.append((x1, x2, label))
-    return data
+        label = 1 if x1 > x2 else -1
+        dots.append((x1, x2, label))
+    return dots
 
-# Перцептрон
-class Perceptron:
-    def __init__(self, learning_rate=0.1, epochs=100):
-        self.lr = learning_rate
-        self.epochs = epochs
-        self.w1, self.w2, self.b = random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1)
 
-    def predict(self, x1, x2):
-        return 1 if (self.w1 * x1 + self.w2 * x2 + self.b) >= 0 else -1
+def step_function(value):
+    return 1 if value >= 0 else -1
 
-    def train(self, training_data):
-        for _ in range(self.epochs):
-            for x1, x2, label in training_data:
-                y_pred = self.predict(x1, x2)
-                error = label - y_pred
-                if error != 0:  # Обновление весов только при ошибке
-                    self.w1 += self.lr * error * x1
-                    self.w2 += self.lr * error * x2
-                    self.b += self.lr * error
 
-    def evaluate(self, test_data):
-        correct = sum(1 for x1, x2, label in test_data if self.predict(x1, x2) == label)
-        return correct / len(test_data)
+def train_perceptron(data):
+    w1, w2, bias = random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1)
 
-# Adaline (Адаптивный нейрон)
-class Adaline:
-    def __init__(self, learning_rate=0.01, epochs=100):
-        self.lr = learning_rate
-        self.epochs = epochs
-        self.w1, self.w2, self.b = random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1)
+    for _ in range(epoches):
+        for x1, x2, y in data:
+            output = step_function(w1 * x1 + w2 * x2 + bias)
+            update = learning_rate * (y - output)
+            w1 += update * x1
+            w2 += update * x2
+            bias += update
 
-    def activation(self, x1, x2):
-        return self.w1 * x1 + self.w2 * x2 + self.b
+    return w1, w2, bias
 
-    def predict(self, x1, x2):
-        return 1 if self.activation(x1, x2) >= 0 else -1
 
-    def train(self, training_data):
-        for _ in range(self.epochs):
-            for x1, x2, label in training_data:
-                output = self.activation(x1, x2)
-                error = label - output  # Линейная ошибка
-                self.w1 += self.lr * error * x1
-                self.w2 += self.lr * error * x2
-                self.b += self.lr * error
+def train_adaline(data):
+    w1, w2, bias = random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1)
 
-    def evaluate(self, test_data):
-        correct = sum(1 for x1, x2, label in test_data if self.predict(x1, x2) == label)
-        return correct / len(test_data)
+    for _ in range(epoches):
+        total_w1_update = 0
+        total_w2_update = 0
+        total_bias_update = 0
 
-# Генерация данных
+        for x1, x2, y in data:
+            output = w1 * x1 + w2 * x2 + bias
+            error = y - output
+            total_w1_update += error * x1
+            total_w2_update += error * x2
+            total_bias_update += error
+
+        w1 += learning_rate * total_w1_update / len(data)
+        w2 += learning_rate * total_w2_update / len(data)
+        bias += learning_rate * total_bias_update / len(data)
+
+    return w1, w2, bias
+
+
+def predict(w1, w2, bias, x1, x2):
+    return step_function(w1 * x1 + w2 * x2 + bias)
+
+
+# Calculate accuracy
+def compute_accuracy(w1, w2, bias, test_data):
+    correct = 0
+    for x1, x2, y in test_data:
+        predicted_out = predict(w1, w2, bias, x1, x2)
+        if predicted_out == y:
+            correct += 1
+    return correct / len(test_data)
+
+
 train_data = generate_data(20)
 test_data = generate_data(1000)
 
-# Обучение и тестирование перцептрона
-perceptron = Perceptron()
-perceptron.train(train_data)
-accuracy_perceptron = perceptron.evaluate(test_data)
-print(f"Точность перцептрона: {accuracy_perceptron:.2%}")
+# Train and test Perceptron
+p_w1, p_w2, p_bias = train_perceptron(train_data)
+p_accuracy = compute_accuracy(p_w1, p_w2, p_bias, test_data)
 
-# Обучение и тестирование Adaline
-adaline = Adaline()
-adaline.train(train_data)
-accuracy_adaline = adaline.evaluate(test_data)
-print(f"Точность Adaline: {accuracy_adaline:.2%}")
+# Train and test Adaline
+a_w1, a_w2, a_bias = train_adaline(train_data)
+a_accuracy = compute_accuracy(a_w1, a_w2, a_bias, test_data)
 
-#Задача 3
+# Print results
+print(f"Точность Персептрона: {p_accuracy * 100}")
+print(f"Точность Адалайн: {a_accuracy * 100}")
+
+# Задача 3
 
 print("=" * 100)
 print("Задача 3")
 print("=" * 100)
 
-import random
-import math
 
-
-# Функция активации (сигмоида) и её производная
 def sigmoid(x):
     return 1 / (1 + math.exp(-x))
 
@@ -120,84 +130,84 @@ def sigmoid_derivative(x):
     return x * (1 - x)
 
 
-# Класс нейронной сети
-class NeuralNetwork:
-    def __init__(self, input_size, hidden_size, output_size, learning_rate=0.5):
-        self.input_size = input_size
-        self.hidden_size = hidden_size
-        self.output_size = output_size
-        self.learning_rate = learning_rate
-
-        # Инициализация весов
-        self.weights_input_hidden = [[random.uniform(-1, 1) for _ in range(hidden_size)] for _ in range(input_size)]
-        self.weights_hidden_output = [[random.uniform(-1, 1) for _ in range(output_size)] for _ in range(hidden_size)]
-
-        # Инициализация смещений (биасов)
-        self.bias_hidden = [random.uniform(-1, 1) for _ in range(hidden_size)]
-        self.bias_output = [random.uniform(-1, 1) for _ in range(output_size)]
-
-    def forward(self, inputs):
-        # Расчет значений скрытого слоя
-        self.hidden_layer = [sigmoid(sum(i * w for i, w in zip(inputs, wh)) + b)
-                             for wh, b in zip(self.weights_input_hidden, self.bias_hidden)]
-
-        # Расчет значений выходного слоя
-        self.output_layer = [sigmoid(sum(h * w for h, w in zip(self.hidden_layer, wo)) + b)
-                             for wo, b in zip(self.weights_hidden_output, self.bias_output)]
-        return self.output_layer
-
-    def backward(self, inputs, expected):
-        # Вычисление ошибки выходного слоя
-        output_errors = [e - o for e, o in zip(expected, self.output_layer)]
-        output_deltas = [error * sigmoid_derivative(o) for error, o in zip(output_errors, self.output_layer)]
-
-        # Вычисление ошибки скрытого слоя
-        hidden_errors = [sum(output_deltas[j] * self.weights_hidden_output[i][j] for j in range(self.output_size))
-                         for i in range(self.hidden_size)]
-        hidden_deltas = [error * sigmoid_derivative(h) for error, h in zip(hidden_errors, self.hidden_layer)]
-
-        # Обновление весов скрытого -> выходного слоя
-        for i in range(self.hidden_size):
-            for j in range(self.output_size):
-                self.weights_hidden_output[i][j] += self.learning_rate * output_deltas[j] * self.hidden_layer[i]
-
-        # Обновление весов входного -> скрытого слоя
-        for i in range(self.input_size):
-            for j in range(self.hidden_size):
-                self.weights_input_hidden[i][j] += self.learning_rate * hidden_deltas[j] * inputs[i]
-
-        # Обновление биасов
-        self.bias_output = [b + self.learning_rate * d for b, d in zip(self.bias_output, output_deltas)]
-        self.bias_hidden = [b + self.learning_rate * d for b, d in zip(self.bias_hidden, hidden_deltas)]
-
-    def train(self, data, epochs=10000):
-        for _ in range(epochs):
-            for inputs, expected in data:
-                self.forward(inputs)
-                self.backward(inputs, expected)
-
-    def predict(self, inputs):
-        output = self.forward(inputs)
-        return [round(o) for o in output]
-
-
-# Обучающие данные (буквы X, Y, I, L)
-data = [
-    ([1, 0, 1, 0, 1, 0, 1, 0, 1], [0, 0, 0, 1]),  # X
-    ([1, 0, 1, 0, 1, 0, 0, 1, 0], [0, 0, 1, 0]),  # Y
-    ([0, 1, 0, 0, 1, 0, 0, 1, 0], [0, 1, 0, 0]),  # I
-    ([1, 0, 0, 1, 0, 0, 1, 1, 1], [1, 0, 0, 0])  # L
+inputs = [
+    [1, 0, 1, 0, 1, 0, 1, 0, 1],  # X
+    [1, 0, 1, 0, 1, 0, 0, 1, 0],  # Y
+    [0, 1, 0, 0, 1, 0, 0, 1, 0],  # I
+    [1, 0, 0, 1, 0, 0, 1, 1, 1]  # L
 ]
 
-# Создание и обучение нейронной сети
-nn = NeuralNetwork(input_size=9, hidden_size=6, output_size=4, learning_rate=0.5)
-nn.train(data, epochs=10000)
+outputs = [
+    [0, 0, 0, 1],
+    [0, 0, 1, 0],
+    [0, 1, 0, 0],
+    [1, 0, 0, 0]
+]
 
-# Тестирование нейросети
-print("Распознавание символов:")
-for inputs, expected in data:
-    print(f"Вход: {inputs} -> Выход: {nn.predict(inputs)}")
+input_size = 9
+hidden_size = 10
+output_size = 4
 
-# Проверка с шумом
-noisy_input = [0, 1, 0, 1, 1, 0, 0, 1, 0]  # Шум в букве I
-print(f"Шумный вход: {noisy_input} -> Выход: {nn.predict(noisy_input)}")
+weights_input_hidden = [[random.uniform(-1, 1) for _ in range(hidden_size)] for _ in range(input_size)]
+weights_hidden_output = [[random.uniform(-1, 1) for _ in range(output_size)] for _ in range(hidden_size)]
+
+bias_hidden = [random.uniform(-1, 1) for _ in range(hidden_size)]
+bias_output = [random.uniform(-1, 1) for _ in range(output_size)]
+
+learning_rate = 0.5
+epochs = 500
+
+for epoch in range(epochs):
+    total_error = 0
+    for i in range(len(inputs)):
+        hidden_layer = [
+            sigmoid(sum(inputs[i][j] * weights_input_hidden[j][k] for j in range(input_size)) + bias_hidden[k]) for k in
+            range(hidden_size)]
+        output_layer = [
+            sigmoid(sum(hidden_layer[k] * weights_hidden_output[k][m] for k in range(hidden_size)) + bias_output[m]) for
+            m in range(output_size)]
+
+        output_errors = [outputs[i][m] - output_layer[m] for m in range(output_size)]
+        total_error += sum(error ** 2 for error in output_errors)
+
+        output_deltas = [output_errors[m] * sigmoid_derivative(output_layer[m]) for m in range(output_size)]
+
+        hidden_errors = [sum(output_deltas[m] * weights_hidden_output[k][m] for m in range(output_size)) for k in
+                         range(hidden_size)]
+        hidden_deltas = [hidden_errors[k] * sigmoid_derivative(hidden_layer[k]) for k in range(hidden_size)]
+
+        for k in range(hidden_size):
+            for m in range(output_size):
+                weights_hidden_output[k][m] += learning_rate * output_deltas[m] * hidden_layer[k]
+
+        for j in range(input_size):
+            for k in range(hidden_size):
+                weights_input_hidden[j][k] += learning_rate * hidden_deltas[k] * inputs[i][j]
+
+        for m in range(output_size):
+            bias_output[m] += learning_rate * output_deltas[m]
+
+        for k in range(hidden_size):
+            bias_hidden[k] += learning_rate * hidden_deltas[k]
+
+
+def predict(input_data):
+    hidden_layer = [sigmoid(sum(input_data[j] * weights_input_hidden[j][k] for j in range(input_size)) + bias_hidden[k])
+                    for k in range(hidden_size)]
+    output_layer = [
+        sigmoid(sum(hidden_layer[k] * weights_hidden_output[k][m] for k in range(hidden_size)) + bias_output[m]) for m
+        in range(output_size)]
+    return output_layer
+
+
+print("\nТестирование на данных с шумом:")
+test_noisy = [
+    [1, 0, 1, 0, 1, 1, 1, 0, 1],
+    [1, 1, 1, 0, 1, 0, 0, 1, 0],
+    [0, 1, 0, 1, 1, 0, 0, 1, 0],
+    [1, 0, 0, 1, 0, 0, 1, 1, 0]
+]
+
+for i, letter in enumerate(["X", "Y", "I", "L"]):
+    output = predict(test_noisy[i])
+    print(f"{letter}: {output}")
