@@ -7,9 +7,7 @@ def f(x):
 
 def grad_f(x):
     x1, x2 = x
-    df_dx1 = 2 * x1 - x2 + 1
-    df_dx2 = 16 * x2 - x1
-    return np.array([df_dx1, df_dx2])
+    return np.array([2 * x1 - x2 + 1, 16 * x2 - x1])
 
 def hessian_f(x):
     return np.array([
@@ -65,14 +63,11 @@ def newton_method(x0, eps1, eps2, M):
 
     return xk, f(xk), condition, k, np.array(path)
 
-
-# Параметры
 x0 = [1.5, 0.1]
 eps1 = 0.1
 eps2 = 0.15
 M = 10
 
-# Запуск
 x_star, f_star, stop_condition, iterations, path = newton_method(x0, eps1, eps2, M)
 
 print(f"x* = {x_star}")
@@ -105,5 +100,4 @@ ax.set_title("3D-график функции")
 ax.set_xlabel("x1")
 ax.set_ylabel("x2")
 ax.set_zlabel("f(x1, x2)")
-plt.legend()
 plt.show()
