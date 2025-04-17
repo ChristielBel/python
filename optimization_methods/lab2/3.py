@@ -43,8 +43,13 @@ def newton_method(x0, eps1, eps2, M):
     path = [xk.copy()]
 
     while True:
+        print(f"k = {k}")
+        print(f"x{k} = {xk}")
         grad = grad_f(xk)
         norm_grad = np.linalg.norm(grad)
+
+        print(f"grad(f(x{k})) = {grad}")
+        print(f"||grad(f(x{k}))|| = {norm_grad}")
 
         if norm_grad < eps1:
             return xk, f(xk), "||grad(f(xk))|| < ε1", k, np.array(path)
@@ -59,18 +64,27 @@ def newton_method(x0, eps1, eps2, M):
             H_inv = None
 
         if H_inv is not None and np.all(np.linalg.eigvals(H_inv) > 0):
-            direction = - H_inv @ grad
+            dk = - H_inv @ grad
         else:
-            direction = - grad
+            dk = - grad
 
-        phi = lambda t: f(xk + t * direction)
+        phi = lambda t: f(xk + t * dk)
         tk = golden_ratio_search(phi)
 
-        x_next = xk + tk * direction
+        print(f"H(x{k}) = {H}")
+        print(f"H(x{k}^(-1)) = {H_inv}")
+
+        print(f"d{k} = {dk}")
+        print(f"t{k} = {tk}")
+
+        x_next = xk + tk * dk
         fx = f(x_next)
+
+        print(f"||x{k + 1} - x{k}|| = {np.linalg.norm(x_next - xk)}")
 
         if np.linalg.norm(x_next - xk) < eps2 and abs(fx - fx_prev) < eps2:
             path.append(x_next.copy())
+            print(f"|f(x{k + 1}) – f(x{k})| = {abs(fx - fx_prev)}")
             return x_next, fx, "||xk+1 - xk|| < ε2 и |f(xk+1) – f(xk)| < ε2", k, np.array(path)
 
         xk = x_next
@@ -95,6 +109,7 @@ y_vals = np.linspace(-2, 2.5, 400)
 X, Y = np.meshgrid(x_vals, y_vals)
 Z = f([X, Y])
 
+plt.style.use('dark_background')
 fig = plt.figure(figsize=(10, 6))
 ax = fig.add_subplot(111, projection='3d')
 ax.plot_surface(X, Y, Z, cmap='viridis', edgecolor='none', alpha=0.8)
