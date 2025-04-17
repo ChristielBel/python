@@ -29,8 +29,13 @@ def steepest_gradient_descent(x0, eps1, eps2, M):
     path = [xk.copy()]
 
     while True:
+        print(f"k = {k}")
+        print(f"x{k} = {xk}")
         grad = grad_f(xk)
         norm_grad = np.linalg.norm(grad)
+
+        print(f"grad(f(x{k})) = {grad}")
+        print(f"||grad(f(x{k}))|| = {norm_grad}")
 
         if norm_grad < eps1:
             return xk, f(xk), "||grad(f(xk))|| < ε1", k, np.array(path)
@@ -39,12 +44,16 @@ def steepest_gradient_descent(x0, eps1, eps2, M):
             return xk, f(xk), "k >= M", k, np.array(path)
 
         tk = step_size(xk)
+        print(f"t{k} = {tk}")
         x_next = xk - tk * grad
         fx = f(x_next)
         path.append(x_next.copy())
 
+        print(f"||x{k + 1} - x{k}|| = {np.linalg.norm(x_next - xk)}")
+
         if np.linalg.norm(x_next - xk) < eps2 and abs(fx - fx_prev) < eps2:
             counter += 1
+            print(f"|f(x{k + 1}) – f(x{k})| = {abs(fx - fx_prev)}")
             if counter >= 2:
                 return x_next, fx, "||xk+1 - xk|| < ε2 и |f(xk+1) – f(xk)| < ε2", k, np.array(path)
         else:
