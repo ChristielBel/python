@@ -80,6 +80,7 @@ y_vals = np.linspace(-2, 2.5, 400)
 X, Y = np.meshgrid(x_vals, y_vals)
 Z = f([X, Y])
 
+plt.style.use('dark_background')
 fig = plt.figure(figsize=(10, 7))
 ax = fig.add_subplot(111, projection='3d')
 ax.plot_surface(X, Y, Z, cmap='viridis', alpha=0.8)
