@@ -12,12 +12,6 @@ def grad_f(x):
     x1, x2 = x
     return np.array([2 * x1 - x2 + 1, 16 * x2 - x1])
 
-def hessian_f(x):
-    return np.array([
-        [2, -1],
-        [-1, 16]
-    ])
-
 def golden_ratio_search(phi, a=0, b=1, l=1e-4):
     yk = a + ((3 - math.sqrt(5)) / 2) * (b - a)
     zk = a + b - yk
@@ -36,58 +30,53 @@ def golden_ratio_search(phi, a=0, b=1, l=1e-4):
 
     return (a + b) / 2
 
-def newton_method(x0, eps1, eps2, M):
+def fletcher_reeves_method(x0, eps1, eps2, M):
     xk = np.array(x0, dtype=float)
-    k = 0
+    grad_k = grad_f(xk)
+    dk = -grad_k
     fx_prev = f(xk)
+    k = 0
+    stop_counter = 0
     path = [xk.copy()]
 
     while True:
         print(f"k = {k}")
         print(f"x{k} = {xk}")
-        grad = grad_f(xk)
-        norm_grad = np.linalg.norm(grad)
-
-        print(f"grad(f(x{k})) = {grad}")
-        print(f"||grad(f(x{k}))|| = {norm_grad}")
-
-        if norm_grad < eps1:
+        
+        if np.linalg.norm(grad_k) < eps1:
             return xk, f(xk), "||grad(f(xk))|| < ε1", k, np.array(path)
 
         if k >= M:
             return xk, f(xk), "k ≥ M", k, np.array(path)
 
-        H = hessian_f(xk)
-        try:
-            H_inv = np.linalg.inv(H)
-        except np.linalg.LinAlgError:
-            H_inv = None
-
-        if H_inv is not None and np.all(np.linalg.eigvals(H_inv) > 0):
-            dk = - H_inv @ grad
-        else:
-            dk = - grad
+        print(f"grad(f(x{k})) = {grad_k}")
+        print(f"||grad(f(x{k}))|| = {np.linalg.norm(grad_k)}")
 
         phi = lambda t: f(xk + t * dk)
         tk = golden_ratio_search(phi)
-
-        print(f"H(x{k}) = {H}")
-        print(f"H(x{k}^(-1)) = {H_inv}")
 
         print(f"d{k} = {dk}")
         print(f"t{k} = {tk}")
 
         x_next = xk + tk * dk
+        grad_next = grad_f(x_next)
         fx = f(x_next)
 
         print(f"||x{k + 1} - x{k}|| = {np.linalg.norm(x_next - xk)}")
 
         if np.linalg.norm(x_next - xk) < eps2 and abs(fx - fx_prev) < eps2:
-            path.append(x_next.copy())
+            stop_counter += 1
             print(f"|f(x{k + 1}) – f(x{k})| = {abs(fx - fx_prev)}")
-            return x_next, fx, "||xk+1 - xk|| < ε2 и |f(xk+1) – f(xk)| < ε2", k, np.array(path)
+            if stop_counter >= 2:
+                path.append(x_next.copy())
+                return x_next, fx, "||xk+1 - xk|| < ε2 и |f(xk+1) – f(xk)| < ε2", k, np.array(path)
+        else:
+            stop_counter = 0
 
+        beta = np.dot(grad_next, grad_next) / np.dot(grad_k, grad_k)
+        dk = -grad_next + beta * dk
         xk = x_next
+        grad_k = grad_next
         fx_prev = fx
         path.append(xk.copy())
         k += 1
@@ -97,7 +86,7 @@ eps1 = 0.1
 eps2 = 0.15
 M = 10
 
-x_min, f_min, stop_cond, iterations, path = newton_method(x0, eps1, eps2, M)
+x_min, f_min, stop_cond, iterations, path = fletcher_reeves_method(x0, eps1, eps2, M)
 
 print(f"x* = {x_min}")
 print(f"f(x*) = {f_min}")
