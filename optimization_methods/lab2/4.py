@@ -1,85 +1,97 @@
 import numpy as np
+import math
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 
-# Целевая функция
 def f(x):
     x1, x2 = x
-    return x1 ** 2 + 8 * x2 ** 2 - x1 * x2 + x1
+    return x1**2 + 8 * x2**2 - x1 * x2 + x1
 
-# Градиент функции
 def grad_f(x):
     x1, x2 = x
     return np.array([2 * x1 - x2 + 1, 16 * x2 - x1])
 
-# Метод золотого сечения
-def golden_section_search(phi, a=0, b=1, tol=1e-5):
-    gr = (np.sqrt(5) + 1) / 2
-    c = b - (b - a) / gr
-    d = a + (b - a) / gr
-    while abs(b - a) > tol:
-        if phi(c) < phi(d):
-            b = d
+def golden_ratio_search(phi, a=0, b=1, l=1e-4):
+    yk = a + ((3 - math.sqrt(5)) / 2) * (b - a)
+    zk = a + b - yk
+
+    while abs(b - a) > l:
+        fy = phi(yk)
+        fz = phi(zk)
+        if fy <= fz:
+            b = zk
+            zk = yk
+            yk = a + b - yk
         else:
-            a = c
-        c = b - (b - a) / gr
-        d = a + (b - a) / gr
+            a = yk
+            yk = zk
+            zk = a + b - zk
+
     return (a + b) / 2
 
-# Метод Флетчера–Ривза с двойной проверкой условия остановки
-def fletcher_reeves(x0, eps1, eps2, M):
+def fletcher_reeves_method(x0, eps1, eps2, M):
     xk = np.array(x0, dtype=float)
     grad_k = grad_f(xk)
-    dk = -grad_k
+    direction = -grad_k
+    fx_prev = f(xk)
     k = 0
-    f_prev = f(xk)
-    stop_counter = 0  # Счётчик подряд выполненных условий
+    stop_counter = 0
+    path = [xk.copy()]
 
     while True:
-        print(f"k = {k}")
-        print(f"x{k} = {xk}")
-        print(f"grad = {grad_k}")
-        print(f"norm = {np.linalg.norm(grad_k)}")
         if np.linalg.norm(grad_k) < eps1:
-            return xk, f(xk), "||grad(f(xk))|| < eps1", k + 1
+            return xk, f(xk), "||grad(f(xk))|| < ε1", k, np.array(path)
 
         if k >= M:
-            return xk, f(xk), "Достигнуто максимальное число итераций", k + 1
+            return xk, f(xk), "k ≥ M", k, np.array(path)
 
-        phi = lambda t: f(xk + t * dk)
-        tk = golden_section_search(phi)
+        phi = lambda t: f(xk + t * direction)
+        tk = golden_ratio_search(phi)
 
-        print(f"t = {tk}")
-        xk_new = xk + tk * dk
-        grad_k_new = grad_f(xk_new)
-        f_new = f(xk_new)
+        x_next = xk + tk * direction
+        grad_next = grad_f(x_next)
+        fx = f(x_next)
 
-        if np.linalg.norm(xk_new - xk) < eps2 and abs(f_new - f_prev) < eps2:
+        if np.linalg.norm(x_next - xk) < eps2 and abs(fx - fx_prev) < eps2:
             stop_counter += 1
             if stop_counter >= 2:
-                return xk_new, f_new, "Условия по ||xk+1 - xk|| и |f(xk+1) - f(xk)| выполнены дважды", k + 1
+                path.append(x_next.copy())
+                return x_next, fx, "||xk+1 - xk|| < ε2 и |f(xk+1) – f(xk)| < ε2", k, np.array(path)
         else:
-            stop_counter = 0  # сброс если условие не выполнено подряд
+            stop_counter = 0
 
-        beta_k = np.dot(grad_k_new, grad_k_new) / np.dot(grad_k, grad_k)
-        dk = -grad_k_new + beta_k * dk
-
-        print(np.dot(grad_k_new, grad_k_new) , np.dot(grad_k, grad_k))
-        print(f"beta = {beta_k}")
-        print(f"d = {dk}")
-        xk = xk_new
-        grad_k = grad_k_new
-        f_prev = f_new
+        beta = np.dot(grad_next, grad_next) / np.dot(grad_k, grad_k)
+        direction = -grad_next + beta * direction
+        xk = x_next
+        grad_k = grad_next
+        fx_prev = fx
+        path.append(xk.copy())
         k += 1
 
-# Параметры
 x0 = [1.5, 0.1]
 eps1 = 0.1
 eps2 = 0.15
 M = 10
 
-# Запуск
-x_star, f_star, stop_cond, iterations = fletcher_reeves(x0, eps1, eps2, M)
+x_min, f_min, stop_cond, iterations, path = fletcher_reeves_method(x0, eps1, eps2, M)
 
-print(f"x* = {x_star}")
-print(f"f(x*) = {f_star}")
+print(f"x* = {x_min}")
+print(f"f(x*) = {f_min}")
 print(f"Условие остановки: {stop_cond}")
-print(f"Количество итераций: {iterations}")
+print(f"Количество итераций: {iterations + 1}")
+
+# 3D-график
+x_vals = np.linspace(-2, 2.5, 400)
+y_vals = np.linspace(-2, 2.5, 400)
+X, Y = np.meshgrid(x_vals, y_vals)
+Z = f([X, Y])
+
+fig = plt.figure(figsize=(10, 6))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, cmap='viridis', edgecolor='none', alpha=0.8)
+ax.set_title("3D-график функции")
+ax.set_xlabel("x1")
+ax.set_ylabel("x2")
+ax.set_zlabel("f(x1, x2)")
+plt.show()
