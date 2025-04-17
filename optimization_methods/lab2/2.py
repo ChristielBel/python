@@ -1,13 +1,25 @@
 import numpy as np
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 def f(x):
     x1, x2 = x
-    return x1 ** 2 + 8 * x2 ** 2 - x1 * x2 + x1
+    return x1**2 + 8 * x2**2 - x1 * x2 + x1
 
 def grad_f(x):
     x1, x2 = x
     return np.array([2 * x1 - x2 + 1, 16 * x2 - x1])
+
+def step_size(x):
+    x1, x2 = x
+    numerator = (2 * x1 - x2 + 1) ** 2 + (16 * x2 - x1) ** 2
+    denominator = (
+        2 * (2 * x1 - x2 + 1) ** 2 +
+        16 * (16 * x2 - x1) ** 2 -
+        2 * (2 * x1 - x2 + 1) * (16 * x2 - x1)
+    )
+    return numerator / denominator
 
 def hessian_f(x):
     return np.array([
@@ -16,10 +28,9 @@ def hessian_f(x):
     ])
 
 def newton_method(x0, eps1, eps2, M):
+    xk = np.array(x0, dtype=float)
     k = 0
-    xk = np.array(x0)
     fx_prev = f(xk)
-
     path = [xk.copy()]
 
     while True:
@@ -27,12 +38,10 @@ def newton_method(x0, eps1, eps2, M):
         norm_grad = np.linalg.norm(grad)
 
         if norm_grad < eps1:
-            condition = "||grad(f(xk))|| < ε1"
-            break
+            return xk, f(xk), "||grad(f(xk))|| < ε1", k, np.array(path)
 
         if k >= M:
-            condition = "k >= M"
-            break
+            return xk, f(xk), "k >= M", k, np.array(path)
 
         H = hessian_f(xk)
         try:
@@ -41,61 +50,44 @@ def newton_method(x0, eps1, eps2, M):
             H_inv = None
 
         if H_inv is not None and np.all(np.linalg.eigvals(H_inv) > 0):
-            d = - H_inv @ grad
+            direction = - H_inv @ grad
+            tk = 1
         else:
-            d = - grad
+            direction = - grad
+            tk = step_size(xk)
 
-        t = 1
-        x_next = xk + t * d
-        fx_next = f(x_next)
+        x_next = xk + tk * direction
+        fx = f(x_next)
 
-        if (np.linalg.norm(x_next - xk) < eps2 and
-                abs(fx_next - fx_prev) < eps2):
-            xk = x_next
-            condition = "||xk+1 - xk|| < ε2 и |f(xk+1) – f(xk)| < ε2"
-            path.append(xk.copy())
-            break
+        if np.linalg.norm(x_next - xk) < eps2 and abs(fx - fx_prev) < eps2:
+            path.append(x_next.copy())
+            return x_next, fx, "||xk+1 - xk|| < ε2 и |f(xk+1) – f(xk)| < ε2", k, np.array(path)
 
         xk = x_next
-        fx_prev = fx_next
+        fx_prev = fx
         path.append(xk.copy())
         k += 1
-
-    return xk, f(xk), condition, k, np.array(path)
 
 x0 = [1.5, 0.1]
 eps1 = 0.1
 eps2 = 0.15
 M = 10
 
-x_star, f_star, stop_condition, iterations, path = newton_method(x0, eps1, eps2, M)
+x_min, f_min, stop_cond, iterations, path = newton_method(x0, eps1, eps2, M)
 
-print(f"x* = {x_star}")
-print(f"f(x*) = {f_star}")
-print(f"Условие остановки: {stop_condition}")
+print(f"x* = {x_min}")
+print(f"f(x*) = {f_min}")
+print(f"Условие остановки: {stop_cond}")
 print(f"Количество итераций: {iterations + 1}")
 
-x1_vals = np.linspace(-1, 2.5, 400)
-x2_vals = np.linspace(-0.5, 1.5, 400)
-X1, X2 = np.meshgrid(x1_vals, x2_vals)
-Z = f((X1, X2))
-
-plt.figure(figsize=(8, 6))
-cp = plt.contour(X1, X2, Z, levels=50, cmap='viridis')
-plt.colorbar(cp)
-plt.plot(path[:, 0], path[:, 1], 'r.-', label='Траектория спуска')
-plt.scatter(x0[0], x0[1], color='blue', label='Начальная точка')
-plt.scatter(x_star[0], x_star[1], color='red', marker='*', s=100, label='Минимум')
-plt.title("Линии уровня и траектория метода Ньютона")
-plt.xlabel("x1")
-plt.ylabel("x2")
-plt.legend()
-plt.grid(True)
-plt.show()
+x_vals = np.linspace(-2, 2.5, 400)
+y_vals = np.linspace(-2, 2.5, 400)
+X, Y = np.meshgrid(x_vals, y_vals)
+Z = f([X, Y])
 
 fig = plt.figure(figsize=(10, 7))
 ax = fig.add_subplot(111, projection='3d')
-ax.plot_surface(X1, X2, Z, cmap='viridis', alpha=0.9, edgecolor='none')
+ax.plot_surface(X, Y, Z, cmap='viridis', alpha=0.8)
 ax.set_title("3D-график функции")
 ax.set_xlabel("x1")
 ax.set_ylabel("x2")
