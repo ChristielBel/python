@@ -81,12 +81,12 @@ print(f"f(x*) = {f_min}")
 print(f"Условие остановки: {stop_cond}")
 print(f"Количество итераций: {iterations + 1}")
 
-# 3D-график
 x_vals = np.linspace(-2, 2.5, 400)
 y_vals = np.linspace(-2, 2.5, 400)
 X, Y = np.meshgrid(x_vals, y_vals)
 Z = f([X, Y])
 
+plt.style.use('dark_background')
 fig = plt.figure(figsize=(10, 6))
 ax = fig.add_subplot(111, projection='3d')
 ax.plot_surface(X, Y, Z, cmap='viridis', edgecolor='none', alpha=0.8)
