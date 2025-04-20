@@ -33,28 +33,40 @@ def golden_ratio_search(phi, a=0, b=1, l=1e-4):
 def fletcher_reeves_method(x0, eps1, eps2, M):
     xk = np.array(x0, dtype=float)
     grad_k = grad_f(xk)
-    direction = -grad_k
+    dk = -grad_k
     fx_prev = f(xk)
     k = 0
     stop_counter = 0
     path = [xk.copy()]
 
     while True:
+        print(f"\nk = {k}")
+        print(f"x{k} = {xk}")
+
         if np.linalg.norm(grad_k) < eps1:
             return xk, f(xk), "||grad(f(xk))|| < ε1", k, np.array(path)
+
+        print(f"grad(f(x{k})) = {grad_k}")
+        print(f"||grad(f(x{k}))|| = {np.linalg.norm(grad_k)}")
 
         if k >= M:
             return xk, f(xk), "k ≥ M", k, np.array(path)
 
-        phi = lambda t: f(xk + t * direction)
+        phi = lambda t: f(xk + t * dk)
         tk = golden_ratio_search(phi)
 
-        x_next = xk + tk * direction
+        print(f"d{k} = {dk}")
+        print(f"t{k} = {tk}")
+
+        x_next = xk + tk * dk
         grad_next = grad_f(x_next)
         fx = f(x_next)
 
+        print(f"||x{k + 1} - x{k}|| = {np.linalg.norm(x_next - xk)}")
+
         if np.linalg.norm(x_next - xk) < eps2 and abs(fx - fx_prev) < eps2:
             stop_counter += 1
+            print(f"|f(x{k + 1}) – f(x{k})| = {abs(fx - fx_prev)}")
             if stop_counter >= 2:
                 path.append(x_next.copy())
                 return x_next, fx, "||xk+1 - xk|| < ε2 и |f(xk+1) – f(xk)| < ε2", k, np.array(path)
@@ -62,7 +74,10 @@ def fletcher_reeves_method(x0, eps1, eps2, M):
             stop_counter = 0
 
         beta = np.dot(grad_next, grad_next) / np.dot(grad_k, grad_k)
-        direction = -grad_next + beta * direction
+        dk = -grad_next + beta * dk
+
+        print(f"beta{k} = {beta}")
+
         xk = x_next
         grad_k = grad_next
         fx_prev = fx
