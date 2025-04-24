@@ -97,7 +97,6 @@ for i, s in enumerate(clusters):
     avg = sum([data[j]['Стипендия'] for j in s]) / len(s)
     print(f"  Средняя стипендия по кластеру: {avg:.2f}\n")
 
-# Вывод всех студентов и к какому кластеру они отнесены
 print("\nСписок студентов с указанием их кластера:\n")
 for i, cluster in enumerate(clusters):
     for j in cluster:
