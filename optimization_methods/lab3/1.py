@@ -1,5 +1,7 @@
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib
+from matplotlib import pyplot as plt
+matplotlib.use('TkAgg')
 import math
 
 def f(x):
@@ -92,11 +94,10 @@ def penalty_method(x0, r0, C, eps, max_iter):
         x_opt, path = fletcher_reeves_method(x, F, grad_F, r)
         all_paths.extend(path)
 
-        f_opt = f(x_opt)
         P_val = P(x_opt, r)
         F_val = F(x_opt, r)
 
-        lambda_val = -r * g(x_opt)
+        lambda_val = r * g(x_opt)
 
         results.append({
             'k': k,
@@ -117,7 +118,7 @@ def penalty_method(x0, r0, C, eps, max_iter):
     return results, x_opt, all_paths
 
 
-x0 = np.array([0.0, 0.0]) 
+x0 = np.array([0.0, 0.0])
 r0 = 1
 C = 10
 eps = 0.0001
@@ -134,10 +135,17 @@ for res in results:
 x1_values = [res['x1'] for res in results]
 x2_values = [res['x2'] for res in results]
 
+analytical_solution = np.array([0.276, 0.1489])
+print("\nАналитическое решение:", analytical_solution)
+print("Полученное решение:", x_opt)
+print("Разница:", np.linalg.norm(x_opt - analytical_solution))
+
 plt.figure(figsize=(10, 6))
 plt.plot(x1_values, x2_values, 'bo-', label='Основные итерации')
-plt.scatter(x1_values[0], x2_values[0], color='red', label='Начальная точка')
-plt.scatter(x1_values[-1], x2_values[-1], color='green', label='Конечная точка')
+plt.scatter(x1_values[0], x2_values[0], color='red', label='Начальная точка', s=100, zorder=5)
+plt.scatter(x1_values[-1], x2_values[-1], color='green', label='Конечная точка', s=100, zorder=5)
+plt.annotate('Start', (x1_values[0], x2_values[0]), textcoords="offset points", xytext=(10,10), ha='center', color='red')
+plt.annotate('End', (x1_values[-1], x2_values[-1]), textcoords="offset points", xytext=(10,-15), ha='center', color='green')
 
 plt.xlabel('x1')
 plt.ylabel('x2')
@@ -145,8 +153,3 @@ plt.title('Метод штрафов')
 plt.grid(True)
 plt.legend()
 plt.show()
-
-analytical_solution = np.array([1 / 3, 1 / 9])
-print("\nАналитическое решение:", analytical_solution)
-print("Полученное решение:", x_opt)
-print("Разница:", np.linalg.norm(x_opt - analytical_solution))
