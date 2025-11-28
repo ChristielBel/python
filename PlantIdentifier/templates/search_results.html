@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Все растения - Определитель растений{% endblock %}
+
+{% block content %}
+<h2>{{ page_title|default("Все растения в базе данных") }}</h2>
+
+{% if filters %}
+<div class="search-form">
+    <h3>Примененные фильтры:</h3>
+    <div class="filter-tags">
+        {% if filters.leaf_form %}
+            <span class="filter-tag">Лист: {{ filters.leaf_form }}</span>
+        {% endif %}
+        {% if filters.fruit_type %}
+            <span class="filter-tag">Плод: {{ filters.fruit_type }}</span>
+        {% endif %}
+        {% if filters.habitat %}
+            <span class="filter-tag">Среда: {{ filters.habitat }}</span>
+        {% endif %}
+        {% if filters.stem_growth_type %}
+            <span class="filter-tag">Рост стебля: {{ filters.stem_growth_type }}</span>
+        {% endif %}
+        <a class="btn" href="{{ url_for('index') }}">Новый поиск</a>
+    </div>
+</div>
+{% endif %}
+
+{% if plants %}
+<div class="plant-grid">
+    {% for plant in plants %}
+    <div class="plant-card">
+        <h3>{{ plant.name }}</h3>
+        <a class="plant-link" href="{{ url_for('plant_details', plant_uri=plant.uri) }}">Подробнее →</a>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p>По вашему запросу растения не найдены.</p>
+<a class="btn" href="{{ url_for('index') }}">Вернуться к поиску</a>
+{% endif %}
+
+<style>
+.plant-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.plant-card {
+    background: #f9fdf9;
+    padding: 20px;
+    border-radius: 14px;
+    border: 1px solid #d7e7d7;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.plant-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+}
+.plant-card h3 {
+    margin: 0 0 12px 0;
+    color: #2e7d32;
+    font-size: 18px;
+}
+
+.filter-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+.filter-tag {
+    background: #e8f5e8;
+    color: #2e7d32;
+    padding: 6px 12px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn {
+    margin-left: 10px;
+    background: #4caf50;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.3s;
+}
+.btn:hover {
+    background: #388e3c;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="search-form">
+    <h2>🔍 Поиск растений</h2>
+    <form action="{{ url_for('search') }}" method="post">
+        <div class="filter-section">
+            <h3>🌿 Вегетативные признаки</h3>
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label for="leaf_form">Форма листа</label>
+                    <select id="leaf_form" name="leaf_form">
+                        <option value="">-- Любая --</option>
+                        {% for form in search_options.leaf_forms %}
+                            <option value="{{ form }}">{{ form }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="leaf_edge">Край листа</label>
+                    <select id="leaf_edge" name="leaf_edge">
+                        <option value="">-- Любой --</option>
+                        {% for edge in search_options.leaf_edges %}
+                            <option value="{{ edge }}">{{ edge }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="leaf_venation">Жилкование листа</label>
+                    <select id="leaf_venation" name="leaf_venation">
+                        <option value="">-- Любое --</option>
+                        {% for venation in search_options.leaf_venations %}
+                            <option value="{{ venation }}">{{ venation }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="leaf_arrangement">Расположение листа</label>
+                    <select id="leaf_arrangement" name="leaf_arrangement">
+                        <option value="">-- Любое --</option>
+                        {% for arrangement in search_options.leaf_arrangements %}
+                            <option value="{{ arrangement }}">{{ arrangement }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="leaf_complexity">Сложность листа</label>
+                    <select id="leaf_complexity" name="leaf_complexity">
+                        <option value="">-- Любая --</option>
+                        {% for complexity in search_options.leaf_complexities %}
+                            <option value="{{ complexity }}">{{ complexity }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="root_type">Тип корня</label>
+                    <select id="root_type" name="root_type">
+                        <option value="">-- Любой --</option>
+                        {% for type in search_options.root_types %}
+                            <option value="{{ type }}">{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="stem_growth_type">Тип роста стебля</label>
+                    <select id="stem_growth_type" name="stem_growth_type">
+                        <option value="">-- Любой --</option>
+                        {% for type in search_options.stem_growth_types %}
+                            <option value="{{ type }}">{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="stem_branching">Разветвлённость стебля</label>
+                    <select id="stem_branching" name="stem_branching">
+                        <option value="">-- Любая --</option>
+                        {% for branching in search_options.stem_branchings %}
+                            <option value="{{ branching }}">{{ branching }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <h3>🌸 Генеративные признаки</h3>
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label for="fruit_type">Тип плода</label>
+                    <select id="fruit_type" name="fruit_type">
+                        <option value="">-- Любой --</option>
+                        {% for type in search_options.fruit_types %}
+                            <option value="{{ type }}">{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="flower_symmetry">Симметрия цветка</label>
+                    <select id="flower_symmetry" name="flower_symmetry">
+                        <option value="">-- Любая --</option>
+                        {% for symmetry in search_options.flower_symmetries %}
+                            <option value="{{ symmetry }}">{{ symmetry }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="flower_inflorescence">Тип соцветия</label>
+                    <select id="flower_inflorescence" name="flower_inflorescence">
+                        <option value="">-- Любой --</option>
+                        {% for inflorescence in search_options.flower_inflorescences %}
+                            <option value="{{ inflorescence }}">{{ inflorescence }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="seed_size">Размер семени</label>
+                    <select id="seed_size" name="seed_size">
+                        <option value="">-- Любой --</option>
+                        {% for size in search_options.seed_sizes %}
+                            <option value="{{ size }}">{{ size }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <h3>🌍 Дополнительные сведения</h3>
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label for="habitat">Среда обитания</label>
+                    <select id="habitat" name="habitat">
+                        <option value="">-- Любая --</option>
+                        {% for habitat in search_options.habitats %}
+                            <option value="{{ habitat }}">{{ habitat }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="bloom_period">Период цветения</label>
+                    <select id="bloom_period" name="bloom_period">
+                        <option value="">-- Любой --</option>
+                        {% for period in search_options.bloom_periods %}
+                            <option value="{{ period }}">{{ period }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="distribution">Распространение</label>
+                    <select id="distribution" name="distribution">
+                        <option value="">-- Любое --</option>
+                        {% for distribution in search_options.distributions %}
+                            <option value="{{ distribution }}">{{ distribution }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit">Найти растения</button>
+            <a class="btn reset-btn" href="{{ url_for('index') }}">Сбросить фильтры</a>
+        </div>
+    </form>
+</div>
+
+<h2>О системе</h2>
+<p>Используйте фильтры выше для поиска по морфологическим и экологическим признакам или просмотрите
+    <a class="plant-link" href="{{ url_for('display_plants') }}">список всех растений</a>.
+</p>
+
+<style>
+.filter-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border-left: 4px solid #4caf50;
+}
+
+.filter-section h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: #2e7d32;
+    font-size: 1.2em;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #2e7d32;
+}
+.form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    transition: 0.2s;
+}
+.form-group select:focus {
+    border-color: #4caf50;
+    box-shadow: 0 0 6px rgba(76, 175, 80, 0.3);
+    outline: none;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+.form-actions .btn,
+.form-actions button {
+    background: #4caf50;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+    text-decoration: none;
+    font-size: 16px;
+}
+.form-actions .btn:hover,
+.form-actions button:hover {
+    background: #388e3c;
+    transform: translateY(-2px);
+}
+.reset-btn {
+    background: #eee;
+    color: #333;
+}
+.reset-btn:hover {
+    background: #ddd;
+}
+</style>
+{% endblock %}

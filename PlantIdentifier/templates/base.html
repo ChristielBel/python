@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Определитель растений{% endblock %}</title>
+
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --primary-light: #4caf50;
+            --primary-dark: #1b5e20;
+            --bg: #f3f6f4;
+            --card: #ffffff;
+            --text: #222;
+            --radius: 14px;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            font-family: "Inter", Arial, sans-serif;
+            color: var(--text);
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 24px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header h1 {
+            font-weight: 600;
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .nav {
+            display: flex;
+            gap: 20px;
+            background: var(--primary-light);
+            padding: 14px 40px;
+        }
+
+        .nav a {
+            color: white;
+            font-weight: 500;
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: var(--radius);
+            transition: 0.3s;
+        }
+        .nav a:hover {
+            background: var(--primary-dark);
+        }
+
+        .content {
+            max-width: 1100px;
+            margin: 30px auto;
+            background: var(--card);
+            padding: 30px;
+            border-radius: var(--radius);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        }
+
+        .plant-card {
+            padding: 20px;
+            background: var(--bg);
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: .3s;
+        }
+        .plant-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+        .plant-card h3 {
+            margin: 0;
+            color: var(--primary);
+        }
+
+        button, .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: .3s;
+        }
+        button:hover, .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .plant-link {
+            color: var(--primary);
+            font-weight: 600;
+            text-decoration: none;
+            transition: .3s;
+        }
+        .plant-link:hover {
+            color: var(--primary-dark);
+        }
+
+        .search-form {
+            background: var(--bg);
+            padding: 25px;
+            border-radius: var(--radius);
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        select, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: var(--radius);
+            border: 1px solid #ccc;
+            font-size: 15px;
+        }
+
+        .details-section {
+            background: var(--bg);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: var(--radius);
+        }
+        .details-section h3 {
+            margin-top: 0;
+            font-size: 20px;
+            color: var(--primary-dark);
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <h1>🌿 Определитель растений</h1>
+    </header>
+
+    <nav class="nav">
+        <a href="{{ url_for('index') }}">Главная</a>
+        <a href="{{ url_for('display_plants') }}">Все растения</a>
+    </nav>
+
+    <main class="content">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

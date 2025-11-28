@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Все растения в базе данных</h2>
+
+{% if plants %}
+    {% for plant in plants %}
+    <div class="plant-card">
+        <h3>{{ plant.name }}</h3>
+        <a class="plant-link" href="{{ url_for('plant_details', plant_uri=plant.uri) }}">Подробнее →</a>
+    </div>
+    {% endfor %}
+{% else %}
+    <p>Растения не найдены.</p>
+{% endif %}
+{% endblock %}

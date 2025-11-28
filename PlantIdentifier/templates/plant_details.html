@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}{{ plant.name }} - Определитель растений{% endblock %}
+
+{% block content %}
+<h2>{{ plant.name }}</h2>
+
+<div class="details-section">
+    <h3>🌱 Вегетативные признаки</h3>
+    <div class="property-grid">
+        {% if plant.root_type %}
+        <div class="property-card">
+            <strong>Корень</strong>
+            <p>{{ plant.root_type }} ({{ plant.root_modification }})</p>
+        </div>
+        {% endif %}
+
+        {% if plant.leaf_form %}
+        <div class="property-card">
+            <strong>Лист</strong>
+            <p>Форма: {{ plant.leaf_form }}</p>
+            <p>Край: {{ plant.leaf_edge }}</p>
+            <p>Жилкование: {{ plant.leaf_venation }}</p>
+            <p>Расположение: {{ plant.leaf_arrangement }}</p>
+            <p>Сложность: {{ plant.leaf_complexity }}</p>
+        </div>
+        {% endif %}
+
+        {% if plant.stem_form %}
+        <div class="property-card">
+            <strong>Стебель</strong>
+            <p>Форма: {{ plant.stem_form }}</p>
+            <p>Разветвлённость: {{ plant.stem_branching }}</p>
+            <p>Опушение: {{ plant.stem_pubescence }}</p>
+            <p>Тип роста: {{ plant.stem_growth_type }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="details-section">
+    <h3>🌸 Генеративные признаки</h3>
+    <div class="property-grid">
+        {% if plant.flower_symmetry %}
+        <div class="property-card">
+            <strong>Цветок</strong>
+            <p>Симметрия: {{ plant.flower_symmetry }}</p>
+            <p>Тип завязи: {{ plant.flower_ovary }}</p>
+            <p>Соцветие: {{ plant.flower_inflorescence }}</p>
+            <p>Число частей: {{ plant.flower_parts }}</p>
+        </div>
+        {% endif %}
+
+        {% if plant.fruit_type %}
+        <div class="property-card">
+            <strong>Плод</strong>
+            <p>{{ plant.fruit_type }}</p>
+        </div>
+        {% endif %}
+
+        {% if plant.seed_form %}
+        <div class="property-card">
+            <strong>Семя</strong>
+            <p>Форма: {{ plant.seed_form }}</p>
+            <p>Размер: {{ plant.seed_size }}</p>
+            <p>Эндосперм: {{ "есть" if plant.seed_endosperm else "нет" }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="details-section">
+    <h3>🌍 Дополнительные сведения</h3>
+    <div class="property-grid">
+        {% if plant.distribution %}
+        <div class="property-card">
+            <strong>Распространение</strong>
+            <p>{{ plant.distribution }}</p>
+        </div>
+        {% endif %}
+        {% if plant.ecology %}
+        <div class="property-card">
+            <strong>Экология</strong>
+            <p>{{ plant.ecology }}</p>
+        </div>
+        {% endif %}
+        {% if plant.habitat %}
+        <div class="property-card">
+            <strong>Среда обитания</strong>
+            <p>{{ plant.habitat }}</p>
+        </div>
+        {% endif %}
+        {% if plant.bloom_period %}
+        <div class="property-card">
+            <strong>Период цветения</strong>
+            <p>{{ plant.bloom_period }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<a class="plant-link" href="{{ url_for('display_plants') }}">← Назад к списку растений</a>
+
+<style>
+.property-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+.property-card {
+    background: #f9fdf9;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #d7e7d7;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.property-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+}
+.property-card strong {
+    display: block;
+    margin-bottom: 8px;
+    color: #2e7d32;
+    font-size: 16px;
+}
+.property-card p {
+    margin: 4px 0;
+    font-size: 14px;
+}
+</style>
+{% endblock %}
