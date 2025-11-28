@@ -1,0 +1,1218 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://www.semanticweb.org/christina/ontologies/2025/10/untitled-ontology-7/"
+     xml:base="http://www.semanticweb.org/christina/ontologies/2025/10/untitled-ontology-7/"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:plant-identifier="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#">
+    <owl:Ontology rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВегетативныйПризнакВключаетКорень -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВегетативныйПризнакВключаетКорень">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AsymmetricProperty"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#IrreflexiveProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВегетативныйПризнак"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВегетативныйПризнакВключаетЛист -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВегетативныйПризнакВключаетЛист">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AsymmetricProperty"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#IrreflexiveProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВегетативныйПризнак"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВегетативныйПризнакВключаетСтебель -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВегетативныйПризнакВключаетСтебель">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AsymmetricProperty"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#IrreflexiveProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВегетативныйПризнак"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнакВключаетПлод -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнакВключаетПлод">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнак"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнакВключаетСемя -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнакВключаетСемя">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнак"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнакВключаетЦветок -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнакВключаетЦветок">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнак"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#имеетВегетативныйПризнак -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#имеетВегетативныйПризнак">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AsymmetricProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВегетативныйПризнак"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#имеетГенеративныйПризнак -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#имеетГенеративныйПризнак">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AsymmetricProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнак"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#имеетДополнительныеСведения -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#имеетДополнительныеСведения">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AsymmetricProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДополнительныеСведения"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Распространение -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Распространение">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДополнительныеСведения"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ЭкологическаяХарактеристика -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ЭкологическаяХарактеристика">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДополнительныеСведения"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#жилкованиеЛиста -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#жилкованиеЛиста">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#крайЛиста -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#крайЛиста">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#модификацияКорня -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#модификацияКорня">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#названиеРастения -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#названиеРастения">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#наличиеЭндоспермаСемени -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#наличиеЭндоспермаСемени">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#опушениеСтебля -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#опушениеСтебля">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#периодЦветения -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#периодЦветения">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДополнительныеСведения"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#разветвлённостьСтебля -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#разветвлённостьСтебля">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#размерСемени -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#размерСемени">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#расположениеЛиста -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#расположениеЛиста">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#симметрияЦветка -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#симметрияЦветка">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#сложностьЛиста -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#сложностьЛиста">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#средаОбитания -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#средаОбитания">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДополнительныеСведения"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#типЗавязиЦветка -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#типЗавязиЦветка">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#типКорня -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#типКорня">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#типПлода -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#типПлода">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#типРостаСтебля -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#типРостаСтебля">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#типСоцветияЦветка -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#типСоцветияЦветка">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#формаЛиста -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#формаЛиста">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#формаСемени -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#формаСемени">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#формаСтебля -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#формаСтебля">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#числоЧастейЦветка -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#числоЧастейЦветка">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВегетативныйПризнак -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВегетативныйПризнак"/>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнак -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнак"/>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДополнительныеСведения -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДополнительныеСведения"/>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень"/>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист"/>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод"/>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение"/>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя"/>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель"/>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП1 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП1">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВегетативныйПризнак"/>
+        <plant-identifier:ВегетативныйПризнакВключаетКорень rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень1"/>
+        <plant-identifier:ВегетативныйПризнакВключаетЛист rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист1"/>
+        <plant-identifier:ВегетативныйПризнакВключаетСтебель rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель1"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП2 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП2">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВегетативныйПризнак"/>
+        <plant-identifier:ВегетативныйПризнакВключаетКорень rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень1"/>
+        <plant-identifier:ВегетативныйПризнакВключаетЛист rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист2"/>
+        <plant-identifier:ВегетативныйПризнакВключаетСтебель rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель2"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП3 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП3">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВегетативныйПризнак"/>
+        <plant-identifier:ВегетативныйПризнакВключаетКорень rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень3"/>
+        <plant-identifier:ВегетативныйПризнакВключаетЛист rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист3"/>
+        <plant-identifier:ВегетативныйПризнакВключаетСтебель rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель3"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП4 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП4">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВегетативныйПризнак"/>
+        <plant-identifier:ВегетативныйПризнакВключаетКорень rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень4"/>
+        <plant-identifier:ВегетативныйПризнакВключаетЛист rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист4"/>
+        <plant-identifier:ВегетативныйПризнакВключаетСтебель rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель4"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП5 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП5">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВегетативныйПризнак"/>
+        <plant-identifier:ВегетативныйПризнакВключаетКорень rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень1"/>
+        <plant-identifier:ВегетативныйПризнакВключаетЛист rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист5"/>
+        <plant-identifier:ВегетативныйПризнакВключаетСтебель rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель1"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП7 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП7">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВегетативныйПризнак"/>
+        <plant-identifier:ВегетативныйПризнакВключаетКорень rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень7"/>
+        <plant-identifier:ВегетативныйПризнакВключаетЛист rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист7"/>
+        <plant-identifier:ВегетативныйПризнакВключаетСтебель rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель7"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП8 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП8">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВегетативныйПризнак"/>
+        <plant-identifier:ВегетативныйПризнакВключаетКорень rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень1"/>
+        <plant-identifier:ВегетативныйПризнакВключаетЛист rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист8"/>
+        <plant-identifier:ВегетативныйПризнакВключаетСтебель rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель8"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП1 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП1">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнак"/>
+        <plant-identifier:ГенеративныйПризнакВключаетПлод rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод1"/>
+        <plant-identifier:ГенеративныйПризнакВключаетСемя rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя1"/>
+        <plant-identifier:ГенеративныйПризнакВключаетЦветок rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок1"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП2 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП2">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнак"/>
+        <plant-identifier:ГенеративныйПризнакВключаетПлод rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод2"/>
+        <plant-identifier:ГенеративныйПризнакВключаетСемя rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя2"/>
+        <plant-identifier:ГенеративныйПризнакВключаетЦветок rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок2"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП3 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП3">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнак"/>
+        <plant-identifier:ГенеративныйПризнакВключаетПлод rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод3"/>
+        <plant-identifier:ГенеративныйПризнакВключаетСемя rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя2"/>
+        <plant-identifier:ГенеративныйПризнакВключаетЦветок rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок3"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП4 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП4">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнак"/>
+        <plant-identifier:ГенеративныйПризнакВключаетПлод rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод4"/>
+        <plant-identifier:ГенеративныйПризнакВключаетСемя rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя2"/>
+        <plant-identifier:ГенеративныйПризнакВключаетЦветок rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок4"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП5 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП5">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнак"/>
+        <plant-identifier:ГенеративныйПризнакВключаетПлод rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод5"/>
+        <plant-identifier:ГенеративныйПризнакВключаетСемя rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя5"/>
+        <plant-identifier:ГенеративныйПризнакВключаетЦветок rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок5"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП6 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП6">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнак"/>
+        <plant-identifier:ГенеративныйПризнакВключаетПлод rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод6"/>
+        <plant-identifier:ГенеративныйПризнакВключаетСемя rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя2"/>
+        <plant-identifier:ГенеративныйПризнакВключаетЦветок rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок6"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП7 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП7">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнак"/>
+        <plant-identifier:ГенеративныйПризнакВключаетПлод rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод7"/>
+        <plant-identifier:ГенеративныйПризнакВключаетСемя rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя7"/>
+        <plant-identifier:ГенеративныйПризнакВключаетЦветок rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок7"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП8 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП8">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГенеративныйПризнак"/>
+        <plant-identifier:ГенеративныйПризнакВключаетПлод rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод3"/>
+        <plant-identifier:ГенеративныйПризнакВключаетСемя rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя8"/>
+        <plant-identifier:ГенеративныйПризнакВключаетЦветок rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок8"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС1 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС1">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДополнительныеСведения"/>
+        <plant-identifier:Распространение>Европа, Азия</plant-identifier:Распространение>
+        <plant-identifier:ЭкологическаяХарактеристика>Светолюбивая, пионер на бедных почвах</plant-identifier:ЭкологическаяХарактеристика>
+        <plant-identifier:периодЦветения>Апрель–Май</plant-identifier:периодЦветения>
+        <plant-identifier:средаОбитания>Леса, парки</plant-identifier:средаОбитания>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС2 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС2">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДополнительныеСведения"/>
+        <plant-identifier:Распространение>Космополит</plant-identifier:Распространение>
+        <plant-identifier:ЭкологическаяХарактеристика>Пионерный, вынослив, лекарственное растение</plant-identifier:ЭкологическаяХарактеристика>
+        <plant-identifier:периодЦветения>Апрель–Июнь</plant-identifier:периодЦветения>
+        <plant-identifier:средаОбитания>Луга, газоны, обочины</plant-identifier:средаОбитания>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС3 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС3">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДополнительныеСведения"/>
+        <plant-identifier:Распространение>Европа, часть Азии</plant-identifier:Распространение>
+        <plant-identifier:ЭкологическаяХарактеристика>Теневыносливый, ядовит</plant-identifier:ЭкологическаяХарактеристика>
+        <plant-identifier:периодЦветения>Май</plant-identifier:периодЦветения>
+        <plant-identifier:средаОбитания>Тенистые лиственные леса</plant-identifier:средаОбитания>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС4 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС4">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДополнительныеСведения"/>
+        <plant-identifier:Распространение>Культивируется по всему миру</plant-identifier:Распространение>
+        <plant-identifier:ЭкологическаяХарактеристика>Агрокультура, светолюбивая</plant-identifier:ЭкологическаяХарактеристика>
+        <plant-identifier:периодЦветения>Июнь–Июль</plant-identifier:периодЦветения>
+        <plant-identifier:средаОбитания>Поля</plant-identifier:средаОбитания>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС5 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС5">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДополнительныеСведения"/>
+        <plant-identifier:Распространение>Европейская часть Евразии</plant-identifier:Распространение>
+        <plant-identifier:ЭкологическаяХарактеристика>Холодостойкая, светолюбивая на начальных этапах, важна в лесных экосистемах</plant-identifier:ЭкологическаяХарактеристика>
+        <plant-identifier:периодЦветения>Май</plant-identifier:периодЦветения>
+        <plant-identifier:средаОбитания>Хвойные леса</plant-identifier:средаОбитания>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС6 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС6">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДополнительныеСведения"/>
+        <plant-identifier:Распространение>Космополит</plant-identifier:Распространение>
+        <plant-identifier:ЭкологическаяХарактеристика>Устойчив к вытоптыванию, лекарственное растение</plant-identifier:ЭкологическаяХарактеристика>
+        <plant-identifier:периодЦветения>Июнь–Август</plant-identifier:периодЦветения>
+        <plant-identifier:средаОбитания>Дороги, тропы, газоны</plant-identifier:средаОбитания>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС7 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС7">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДополнительныеСведения"/>
+        <plant-identifier:Распространение>Европа, Азия, Северная Америка</plant-identifier:Распространение>
+        <plant-identifier:ЭкологическаяХарактеристика>Тенелюбивый</plant-identifier:ЭкологическаяХарактеристика>
+        <plant-identifier:периодЦветения>Не цветёт</plant-identifier:периодЦветения>
+        <plant-identifier:средаОбитания>Леса, влажные ущелья</plant-identifier:средаОбитания>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень1 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень1">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень"/>
+        <plant-identifier:модификацияКорня>Отсутствует</plant-identifier:модификацияКорня>
+        <plant-identifier:типКорня>Стержневой</plant-identifier:типКорня>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень3 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень3">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень"/>
+        <plant-identifier:модификацияКорня>Корневище</plant-identifier:модификацияКорня>
+        <plant-identifier:типКорня>Ризома</plant-identifier:типКорня>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень4 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень4">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень"/>
+        <plant-identifier:модификацияКорня>Отсутствует</plant-identifier:модификацияКорня>
+        <plant-identifier:типКорня>Мочковатый</plant-identifier:типКорня>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень7 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень7">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Корень"/>
+        <plant-identifier:модификацияКорня>Ползучее</plant-identifier:модификацияКорня>
+        <plant-identifier:типКорня>Корневище</plant-identifier:типКорня>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист1 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист1">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист"/>
+        <plant-identifier:жилкованиеЛиста>Пальчатое</plant-identifier:жилкованиеЛиста>
+        <plant-identifier:крайЛиста>Зубчатый</plant-identifier:крайЛиста>
+        <plant-identifier:расположениеЛиста>Очередное</plant-identifier:расположениеЛиста>
+        <plant-identifier:сложностьЛиста>Простой</plant-identifier:сложностьЛиста>
+        <plant-identifier:формаЛиста>Треугольно-ромбовидная</plant-identifier:формаЛиста>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист2 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист2">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист"/>
+        <plant-identifier:жилкованиеЛиста>Параллельное</plant-identifier:жилкованиеЛиста>
+        <plant-identifier:крайЛиста>Цельный</plant-identifier:крайЛиста>
+        <plant-identifier:расположениеЛиста>Розетка</plant-identifier:расположениеЛиста>
+        <plant-identifier:сложностьЛиста>Простой</plant-identifier:сложностьЛиста>
+        <plant-identifier:формаЛиста>Овальная</plant-identifier:формаЛиста>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист3 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист3">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист"/>
+        <plant-identifier:жилкованиеЛиста>Параллельное</plant-identifier:жилкованиеЛиста>
+        <plant-identifier:крайЛиста>Гладкий</plant-identifier:крайЛиста>
+        <plant-identifier:расположениеЛиста>Очередное</plant-identifier:расположениеЛиста>
+        <plant-identifier:сложностьЛиста>Простой</plant-identifier:сложностьЛиста>
+        <plant-identifier:формаЛиста>Ланцетная</plant-identifier:формаЛиста>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист4 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист4">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист"/>
+        <plant-identifier:жилкованиеЛиста>Параллельное</plant-identifier:жилкованиеЛиста>
+        <plant-identifier:крайЛиста>Цельный</plant-identifier:крайЛиста>
+        <plant-identifier:расположениеЛиста>Очередное</plant-identifier:расположениеЛиста>
+        <plant-identifier:сложностьЛиста>Простой</plant-identifier:сложностьЛиста>
+        <plant-identifier:формаЛиста>Линейная</plant-identifier:формаЛиста>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист5 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист5">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист"/>
+        <plant-identifier:жилкованиеЛиста>Параллельное</plant-identifier:жилкованиеЛиста>
+        <plant-identifier:крайЛиста>Цельный</plant-identifier:крайЛиста>
+        <plant-identifier:расположениеЛиста>Спиральное</plant-identifier:расположениеЛиста>
+        <plant-identifier:сложностьЛиста>Простой</plant-identifier:сложностьЛиста>
+        <plant-identifier:формаЛиста>Игловидная</plant-identifier:формаЛиста>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист7 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист7">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист"/>
+        <plant-identifier:жилкованиеЛиста>Дуговидное</plant-identifier:жилкованиеЛиста>
+        <plant-identifier:крайЛиста>Зубчатый</plant-identifier:крайЛиста>
+        <plant-identifier:расположениеЛиста>Очередное</plant-identifier:расположениеЛиста>
+        <plant-identifier:сложностьЛиста>Сложный</plant-identifier:сложностьЛиста>
+        <plant-identifier:формаЛиста>Перисто-рассечённая</plant-identifier:формаЛиста>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист8 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист8">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Лист"/>
+        <plant-identifier:жилкованиеЛиста>Пальчатое</plant-identifier:жилкованиеЛиста>
+        <plant-identifier:крайЛиста>Зубчатый</plant-identifier:крайЛиста>
+        <plant-identifier:расположениеЛиста>Очередное</plant-identifier:расположениеЛиста>
+        <plant-identifier:сложностьЛиста>Простой</plant-identifier:сложностьЛиста>
+        <plant-identifier:формаЛиста>Лопастная</plant-identifier:формаЛиста>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод1 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод1">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод"/>
+        <plant-identifier:типПлода>Крылатка</plant-identifier:типПлода>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод2 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод2">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод"/>
+        <plant-identifier:типПлода>Семянка</plant-identifier:типПлода>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод3 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод3">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод"/>
+        <plant-identifier:типПлода>Ягода</plant-identifier:типПлода>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод4 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод4">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод"/>
+        <plant-identifier:типПлода>Зерновка</plant-identifier:типПлода>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод5 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод5">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод"/>
+        <plant-identifier:типПлода>Шишка</plant-identifier:типПлода>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод6 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод6">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод"/>
+        <plant-identifier:типПлода>Коробочка</plant-identifier:типПлода>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод7 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод7">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Плод"/>
+        <plant-identifier:типПлода>Споры</plant-identifier:типПлода>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение1 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение1">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение"/>
+        <plant-identifier:имеетВегетативныйПризнак rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП1"/>
+        <plant-identifier:имеетГенеративныйПризнак rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП1"/>
+        <plant-identifier:имеетДополнительныеСведения rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС1"/>
+        <plant-identifier:названиеРастения>Берёза повислая</plant-identifier:названиеРастения>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение2 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение2">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение"/>
+        <plant-identifier:имеетВегетативныйПризнак rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП2"/>
+        <plant-identifier:имеетГенеративныйПризнак rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП2"/>
+        <plant-identifier:имеетДополнительныеСведения rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС2"/>
+        <plant-identifier:названиеРастения>Одуванчик лекарственный</plant-identifier:названиеРастения>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение3 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение3">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение"/>
+        <plant-identifier:имеетВегетативныйПризнак rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП3"/>
+        <plant-identifier:имеетГенеративныйПризнак rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП3"/>
+        <plant-identifier:имеетДополнительныеСведения rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС3"/>
+        <plant-identifier:названиеРастения>Ландыш майский</plant-identifier:названиеРастения>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение4 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение4">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение"/>
+        <plant-identifier:имеетВегетативныйПризнак rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП4"/>
+        <plant-identifier:имеетГенеративныйПризнак rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП4"/>
+        <plant-identifier:имеетДополнительныеСведения rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС4"/>
+        <plant-identifier:названиеРастения>Пшеница мягкая</plant-identifier:названиеРастения>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение5 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение5">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение"/>
+        <plant-identifier:имеетВегетативныйПризнак rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП5"/>
+        <plant-identifier:имеетГенеративныйПризнак rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП5"/>
+        <plant-identifier:имеетДополнительныеСведения rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС5"/>
+        <plant-identifier:названиеРастения>Ель европейская</plant-identifier:названиеРастения>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение6 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение6">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение"/>
+        <plant-identifier:имеетВегетативныйПризнак rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП2"/>
+        <plant-identifier:имеетГенеративныйПризнак rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП6"/>
+        <plant-identifier:имеетДополнительныеСведения rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС6"/>
+        <plant-identifier:названиеРастения>Подорожник большой</plant-identifier:названиеРастения>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение7 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение7">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение"/>
+        <plant-identifier:имеетВегетативныйПризнак rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ВП7"/>
+        <plant-identifier:имеетГенеративныйПризнак rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ГП7"/>
+        <plant-identifier:имеетДополнительныеСведения rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#ДС7"/>
+        <plant-identifier:названиеРастения>Папоротник щитовник мужской</plant-identifier:названиеРастения>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение8 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение8">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Растение"/>
+        <plant-identifier:названиеРастения>Виноград культурный</plant-identifier:названиеРастения>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя1 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя1">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя"/>
+        <plant-identifier:наличиеЭндоспермаСемени rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</plant-identifier:наличиеЭндоспермаСемени>
+        <plant-identifier:размерСемени>Мелкое</plant-identifier:размерСемени>
+        <plant-identifier:формаСемени>Мелкое, крылатое</plant-identifier:формаСемени>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя2 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя2">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя"/>
+        <plant-identifier:наличиеЭндоспермаСемени rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</plant-identifier:наличиеЭндоспермаСемени>
+        <plant-identifier:размерСемени>Мелкое</plant-identifier:размерСемени>
+        <plant-identifier:формаСемени>Овальная</plant-identifier:формаСемени>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя5 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя5">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя"/>
+        <plant-identifier:наличиеЭндоспермаСемени rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</plant-identifier:наличиеЭндоспермаСемени>
+        <plant-identifier:размерСемени>Мелкое</plant-identifier:размерСемени>
+        <plant-identifier:формаСемени>Крылатое</plant-identifier:формаСемени>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя7 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя7">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя"/>
+        <plant-identifier:наличиеЭндоспермаСемени rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">false</plant-identifier:наличиеЭндоспермаСемени>
+        <plant-identifier:размерСемени>Не применимо</plant-identifier:размерСемени>
+        <plant-identifier:формаСемени>Не применимо</plant-identifier:формаСемени>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя8 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя8">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Семя"/>
+        <plant-identifier:наличиеЭндоспермаСемени rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</plant-identifier:наличиеЭндоспермаСемени>
+        <plant-identifier:размерСемени>Среднее</plant-identifier:размерСемени>
+        <plant-identifier:формаСемени>Грушевидная</plant-identifier:формаСемени>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель1 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель1">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель"/>
+        <plant-identifier:опушениеСтебля>Гладкий</plant-identifier:опушениеСтебля>
+        <plant-identifier:разветвлённостьСтебля>Разветвлённый</plant-identifier:разветвлённостьСтебля>
+        <plant-identifier:типРостаСтебля>Многолетний</plant-identifier:типРостаСтебля>
+        <plant-identifier:формаСтебля>Деревянистый</plant-identifier:формаСтебля>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель2 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель2">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель"/>
+        <plant-identifier:опушениеСтебля>Гладкий</plant-identifier:опушениеСтебля>
+        <plant-identifier:разветвлённостьСтебля>Не ветвящийся</plant-identifier:разветвлённостьСтебля>
+        <plant-identifier:типРостаСтебля>Многолетний</plant-identifier:типРостаСтебля>
+        <plant-identifier:формаСтебля>Укороченный</plant-identifier:формаСтебля>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель3 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель3">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель"/>
+        <plant-identifier:опушениеСтебля>Гладкий</plant-identifier:опушениеСтебля>
+        <plant-identifier:разветвлённостьСтебля>Не или слабо ветвящийся</plant-identifier:разветвлённостьСтебля>
+        <plant-identifier:типРостаСтебля>Многолетний</plant-identifier:типРостаСтебля>
+        <plant-identifier:формаСтебля>Травянистый, укороченный</plant-identifier:формаСтебля>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель4 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель4">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель"/>
+        <plant-identifier:опушениеСтебля>Гладкий</plant-identifier:опушениеСтебля>
+        <plant-identifier:разветвлённостьСтебля>Не ветвящийся</plant-identifier:разветвлённостьСтебля>
+        <plant-identifier:типРостаСтебля>Однолетний</plant-identifier:типРостаСтебля>
+        <plant-identifier:формаСтебля>Полый соломистый стебель</plant-identifier:формаСтебля>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель7 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель7">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель"/>
+        <plant-identifier:опушениеСтебля>Гладкий</plant-identifier:опушениеСтебля>
+        <plant-identifier:разветвлённостьСтебля>Слабо ветвящийся</plant-identifier:разветвлённостьСтебля>
+        <plant-identifier:типРостаСтебля>Многолетний</plant-identifier:типРостаСтебля>
+        <plant-identifier:формаСтебля>Подземный побег</plant-identifier:формаСтебля>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель8 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель8">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Стебель"/>
+        <plant-identifier:опушениеСтебля>Голый или слабое опушение</plant-identifier:опушениеСтебля>
+        <plant-identifier:разветвлённостьСтебля>Сильно ветвящийся</plant-identifier:разветвлённостьСтебля>
+        <plant-identifier:типРостаСтебля>Многолетний</plant-identifier:типРостаСтебля>
+        <plant-identifier:формаСтебля>Лиана</plant-identifier:формаСтебля>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок1 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок1">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок"/>
+        <plant-identifier:симметрияЦветка>Радиальная</plant-identifier:симметрияЦветка>
+        <plant-identifier:типЗавязиЦветка>Не применимо</plant-identifier:типЗавязиЦветка>
+        <plant-identifier:типСоцветияЦветка>Серёжка</plant-identifier:типСоцветияЦветка>
+        <plant-identifier:числоЧастейЦветка rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">4</plant-identifier:числоЧастейЦветка>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок2 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок2">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок"/>
+        <plant-identifier:симметрияЦветка>Радиальная</plant-identifier:симметрияЦветка>
+        <plant-identifier:типЗавязиЦветка>Нижняя</plant-identifier:типЗавязиЦветка>
+        <plant-identifier:типСоцветияЦветка>Корзинка</plant-identifier:типСоцветияЦветка>
+        <plant-identifier:числоЧастейЦветка rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">100</plant-identifier:числоЧастейЦветка>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок3 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок3">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок"/>
+        <plant-identifier:симметрияЦветка>Двусторонняя</plant-identifier:симметрияЦветка>
+        <plant-identifier:типЗавязиЦветка>Верхняя</plant-identifier:типЗавязиЦветка>
+        <plant-identifier:типСоцветияЦветка>Кисть</plant-identifier:типСоцветияЦветка>
+        <plant-identifier:числоЧастейЦветка rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">6</plant-identifier:числоЧастейЦветка>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок4 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок4">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок"/>
+        <plant-identifier:симметрияЦветка>Мелкие, неспециализированные</plant-identifier:симметрияЦветка>
+        <plant-identifier:типЗавязиЦветка>Верхняя</plant-identifier:типЗавязиЦветка>
+        <plant-identifier:типСоцветияЦветка>Колос</plant-identifier:типСоцветияЦветка>
+        <plant-identifier:числоЧастейЦветка rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">6</plant-identifier:числоЧастейЦветка>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок5 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок5">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок"/>
+        <plant-identifier:симметрияЦветка>Не применимо</plant-identifier:симметрияЦветка>
+        <plant-identifier:типЗавязиЦветка>Не применимо</plant-identifier:типЗавязиЦветка>
+        <plant-identifier:типСоцветияЦветка>Шишка</plant-identifier:типСоцветияЦветка>
+        <plant-identifier:числоЧастейЦветка rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">0</plant-identifier:числоЧастейЦветка>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок6 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок6">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок"/>
+        <plant-identifier:симметрияЦветка>Незначительная, мелкие невзрачные цветки</plant-identifier:симметрияЦветка>
+        <plant-identifier:типЗавязиЦветка>Верхняя</plant-identifier:типЗавязиЦветка>
+        <plant-identifier:типСоцветияЦветка>Колос</plant-identifier:типСоцветияЦветка>
+        <plant-identifier:числоЧастейЦветка rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">5</plant-identifier:числоЧастейЦветка>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок7 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок7">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок"/>
+        <plant-identifier:симметрияЦветка>Не применимо</plant-identifier:симметрияЦветка>
+        <plant-identifier:типЗавязиЦветка>Не применимо</plant-identifier:типЗавязиЦветка>
+        <plant-identifier:типСоцветияЦветка>Не применимо</plant-identifier:типСоцветияЦветка>
+        <plant-identifier:числоЧастейЦветка rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">0</plant-identifier:числоЧастейЦветка>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок8 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок8">
+        <rdf:type rdf:resource="http://www.semanticweb.org/christina/ontologies/2025/10/plant-identifier#Цветок"/>
+        <plant-identifier:симметрияЦветка>Незаметная</plant-identifier:симметрияЦветка>
+        <plant-identifier:типЗавязиЦветка>Верхняя</plant-identifier:типЗавязиЦветка>
+        <plant-identifier:типСоцветияЦветка>Гроздь</plant-identifier:типСоцветияЦветка>
+        <plant-identifier:числоЧастейЦветка rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">5</plant-identifier:числоЧастейЦветка>
+    </owl:NamedIndividual>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.5.29.2024-05-13T12:11:03Z) https://github.com/owlcs/owlapi -->
+
