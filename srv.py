@@ -1,14 +1,12 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-import numpy as np
 import time
 import threading
 from queue import Queue
 from enum import Enum
-
+from queue import Empty
 
 class Stage(Enum):
     """Этапы работы системы"""
@@ -101,15 +99,15 @@ class LiquidComponentSimulator:
     def setup_ui(self):
         # Основные фреймы
         main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        main_frame.grid(row=0, column=0, sticky="wnse")
 
         # Левая часть - визуализация
         left_frame = ttk.LabelFrame(main_frame, text="Визуализация процесса", padding="10")
-        left_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S), padx=(0, 10))
+        left_frame.grid(row=0, column=0, sticky="wnse", padx=(0, 10))
 
         # Правая часть - данные и управление
         right_frame = ttk.Frame(main_frame)
-        right_frame.grid(row=0, column=1, sticky=(tk.W, tk.E, tk.N, tk.S))
+        right_frame.grid(row=0, column=1, sticky="wnse")
 
         # Настройка весов
         self.root.columnconfigure(0, weight=1)
@@ -120,27 +118,27 @@ class LiquidComponentSimulator:
 
         # Визуализация емкостей с прокруткой
         canvas_frame = ttk.Frame(left_frame)
-        canvas_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        canvas_frame.grid(row=0, column=0, sticky="wnse")
 
         self.tank_canvas = tk.Canvas(canvas_frame, width=550, height=500, bg='white')
-        self.tank_canvas.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        self.tank_canvas.grid(row=0, column=0, sticky="wnse")
 
         # Вертикальная прокрутка
-        v_scroll = ttk.Scrollbar(canvas_frame, orient=tk.VERTICAL, command=self.tank_canvas.yview)
-        v_scroll.grid(row=0, column=1, sticky=(tk.N, tk.S))
+        v_scroll = ttk.Scrollbar(canvas_frame, orient="vertical", command=self.tank_canvas.yview)
+        v_scroll.grid(row=0, column=1, sticky="ns")
 
         # ✅ Горизонтальная прокрутка
-        h_scroll = ttk.Scrollbar(canvas_frame, orient=tk.HORIZONTAL, command=self.tank_canvas.xview)
-        h_scroll.grid(row=1, column=0, sticky=(tk.W, tk.E))
+        h_scroll = ttk.Scrollbar(canvas_frame, orient="horizontal", command=self.tank_canvas.xview)
+        h_scroll.grid(row=1, column=0, sticky="we")
 
         self.tank_canvas.configure(
             yscrollcommand=v_scroll.set,
             xscrollcommand=h_scroll.set
         )
-        
+
         # Управление
         control_frame = ttk.LabelFrame(left_frame, text="Управление", padding="10")
-        control_frame.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=(10, 0))
+        control_frame.grid(row=1, column=0, sticky="we", pady=(10, 0))
 
         ttk.Button(control_frame, text="Старт", command=self.start_simulation).grid(row=0, column=0, padx=5)
         ttk.Button(control_frame, text="Пауза", command=self.pause_simulation).grid(row=0, column=1, padx=5)
@@ -154,17 +152,17 @@ class LiquidComponentSimulator:
         self.operator_btn.config(state='disabled')
 
         ttk.Label(control_frame, text="Скорость:").grid(row=1, column=0, pady=(10, 0))
-        self.speed_scale = ttk.Scale(control_frame, from_=0.1, to=5, orient=tk.HORIZONTAL)
+        self.speed_scale = ttk.Scale(control_frame, from_=0.1, to=5, orient="horizontal")
         self.speed_scale.set(1.0)
-        self.speed_scale.grid(row=1, column=1, columnspan=4, sticky=(tk.W, tk.E), pady=(10, 0), padx=5)
+        self.speed_scale.grid(row=1, column=1, columnspan=4, sticky="we", pady=(10, 0), padx=5)
 
         # Панель данных
         data_frame = ttk.LabelFrame(right_frame, text="Данные системы", padding="10")
-        data_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        data_frame.grid(row=0, column=0, sticky="wnse")
 
         # Температуры
         temp_frame = ttk.LabelFrame(data_frame, text="Температуры (°C)", padding="5")
-        temp_frame.grid(row=0, column=0, sticky=(tk.W, tk.E), pady=(0, 10))
+        temp_frame.grid(row=0, column=0, sticky="we", pady=(0, 10))
 
         self.temp_vars = []
         for i in range(3):
@@ -180,7 +178,7 @@ class LiquidComponentSimulator:
 
         # Напряжения
         volt_frame = ttk.LabelFrame(data_frame, text="Напряжения (В)", padding="5")
-        volt_frame.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=(0, 10))
+        volt_frame.grid(row=1, column=0, sticky="we", pady=(0, 10))
 
         self.pump_volt_var = tk.StringVar(value="0.0")
         ttk.Label(volt_frame, text="Насос:").grid(row=0, column=0, sticky=tk.W)
@@ -195,7 +193,7 @@ class LiquidComponentSimulator:
 
         # Регулировка времени
         time_frame = ttk.LabelFrame(data_frame, text="Регулировка времени (сек)", padding="5")
-        time_frame.grid(row=2, column=0, sticky=(tk.W, tk.E), pady=(0, 10))
+        time_frame.grid(row=2, column=0, sticky="we", pady=(0, 10))
 
         # Время наполнения емкости 1
         ttk.Label(time_frame, text="Наполнение емкости 1:").grid(row=0, column=0, sticky=tk.W)
@@ -223,7 +221,7 @@ class LiquidComponentSimulator:
 
         # Коды
         code_frame = ttk.LabelFrame(data_frame, text="Коды и управляющие слова", padding="5")
-        code_frame.grid(row=3, column=0, sticky=(tk.W, tk.E), pady=(0, 10))
+        code_frame.grid(row=3, column=0, sticky="we", pady=(0, 10))
 
         ttk.Label(code_frame, text="Порт 1h (управление):").grid(row=0, column=0, sticky=tk.W)
         self.control_word_var = tk.StringVar(value="0x00000000")
@@ -237,17 +235,17 @@ class LiquidComponentSimulator:
 
         # Расшифровка кодов
         decode_frame = ttk.LabelFrame(data_frame, text="Расшифровка", padding="5")
-        decode_frame.grid(row=4, column=0, sticky=(tk.W, tk.E))
+        decode_frame.grid(row=4, column=0, sticky="we")
 
         self.decode_text = tk.Text(decode_frame, height=14, width=40, font=('Courier', 9))
         self.decode_text.grid(row=0, column=0)
-        scrollbar = ttk.Scrollbar(decode_frame, orient=tk.VERTICAL, command=self.decode_text.yview)
-        scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
+        scrollbar = ttk.Scrollbar(decode_frame, orient="vertical", command=self.decode_text.yview)
+        scrollbar.grid(row=0, column=1, sticky="ns")
         self.decode_text.config(yscrollcommand=scrollbar.set)
 
         # Статус
         status_frame = ttk.Frame(right_frame)
-        status_frame.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=(10, 0))
+        status_frame.grid(row=1, column=0, sticky="we", pady=(10, 0))
 
         self.status_var = tk.StringVar(value="Готов к работе")
         ttk.Label(status_frame, textvariable=self.status_var, font=('Arial', 10, 'bold')).pack()
@@ -318,7 +316,7 @@ class LiquidComponentSimulator:
         # Встраивание графиков в Tkinter
         canvas = FigureCanvasTkAgg(self.fig, master=self.root)
         canvas_widget = canvas.get_tk_widget()
-        canvas_widget.grid(row=0, column=2, sticky=(tk.W, tk.E, tk.N, tk.S), padx=(10, 0))
+        canvas_widget.grid(row=0, column=2, sticky="wnse", padx=(10, 0))
 
         # Настройка весов для графиков
         self.root.columnconfigure(2, weight=2)
@@ -455,26 +453,26 @@ class LiquidComponentSimulator:
         pump_x = start_x - 50
         if self.current_stage == Stage.PUMP_START or self.current_stage == Stage.PUMP_RUN:
             self.tank_canvas.create_line(pump_x + 20, arrow_y, start_x, arrow_y,
-                                         arrow=tk.LAST, fill='blue', width=3)
+                                         arrow="last", fill='blue', width=3)
 
         # Стрелки между емкостями
         if self.current_stage == Stage.FILL_TANK1_TO_TANK2 and self.valve_states[0]:
             x1 = start_x + tank_width
             x2 = start_x + tank_width + spacing
             self.tank_canvas.create_line(x1, arrow_y, x2, arrow_y,
-                                         arrow=tk.LAST, fill='green', width=3)
+                                         arrow="last", fill='green', width=3)
 
         if self.current_stage == Stage.FILL_TANK2_TO_TANK3 and self.valve_states[1]:
             x1 = start_x + tank_width + spacing + tank_width
             x2 = start_x + 2 * (tank_width + spacing)
             self.tank_canvas.create_line(x1, arrow_y, x2, arrow_y,
-                                         arrow=tk.LAST, fill='green', width=3)
+                                         arrow="last", fill='green', width=3)
 
         # Стрелка слива из емкости 3
         if self.current_stage == Stage.DRAIN_TANK3 and self.valve_states[2]:
             x3 = start_x + 2 * (tank_width + spacing) + tank_width
             self.tank_canvas.create_line(x3, arrow_y, x3 + 30, arrow_y,
-                                         arrow=tk.LAST, fill='red', width=3)
+                                         arrow="last", fill='red', width=3)
 
     def get_stage_name(self):
         """Получить название текущего этапа"""
@@ -878,7 +876,8 @@ class LiquidComponentSimulator:
         self.sensor_data = sensor_data
         self.sensor_data_var.set(f"0x{sensor_data:04X}")
 
-    def calculate_adc_code(self, temperature):
+    @staticmethod
+    def calculate_adc_code(temperature):
         """Расчет кода АЦП для температуры"""
         # U = 0.04 * T (из задания)
         voltage = 0.04 * temperature
@@ -887,7 +886,8 @@ class LiquidComponentSimulator:
         adc_code = int(round((voltage - 0) / (30 - 0) * 1024))
         return min(adc_code, 1023)
 
-    def calculate_dac_code(self, voltage):
+    @staticmethod
+    def calculate_dac_code(voltage):
         """Расчет кода ЦАП для напряжения"""
         # D = round(U / 90 * 256)
         dac_code = int(round(voltage / 90 * 256))
@@ -1042,15 +1042,15 @@ class LiquidComponentSimulator:
             while True:
                 self.update_queue.get_nowait()
                 self.update_gui()
-        except:
+        except Empty:
+            # Очередь пуста, просто ждем следующего вызова
             pass
         finally:
             self.root.after(100, self.process_queue)
 
-
 def main():
     root = tk.Tk()
-    app = LiquidComponentSimulator(root)
+    LiquidComponentSimulator(root)
     root.mainloop()
 
 
