@@ -9,18 +9,30 @@
 <div class="search-form">
     <h3>Примененные фильтры:</h3>
     <div class="filter-tags">
-        {% if filters.leaf_form %}
-            <span class="filter-tag">Лист: {{ filters.leaf_form }}</span>
-        {% endif %}
-        {% if filters.fruit_type %}
-            <span class="filter-tag">Плод: {{ filters.fruit_type }}</span>
-        {% endif %}
-        {% if filters.habitat %}
-            <span class="filter-tag">Среда: {{ filters.habitat }}</span>
-        {% endif %}
-        {% if filters.stem_growth_type %}
-            <span class="filter-tag">Рост стебля: {{ filters.stem_growth_type }}</span>
-        {% endif %}
+        {% set filter_labels = {
+            'leaf_form': 'Форма листа',
+            'leaf_edge': 'Край листа',
+            'leaf_venation': 'Жилкование листа',
+            'leaf_arrangement': 'Расположение листа',
+            'leaf_complexity': 'Сложность листа',
+            'root_type': 'Тип корня',
+            'stem_growth_type': 'Рост стебля',
+            'stem_branching': 'Разветвлённость стебля',
+            'fruit_type': 'Тип плода',
+            'flower_symmetry': 'Симметрия цветка',
+            'flower_inflorescence': 'Тип соцветия',
+            'seed_size': 'Размер семени',
+            'habitat': 'Среда обитания',
+            'bloom_period': 'Период цветения',
+            'distribution': 'Распространение'
+        } %}
+
+        {% for key, value in filters.items() %}
+            {% if value %}
+                <span class="filter-tag">{{ filter_labels[key] }}: {{ value }}</span>
+            {% endif %}
+        {% endfor %}
+
         <a class="btn" href="{{ url_for('index') }}">Новый поиск</a>
     </div>
 </div>
