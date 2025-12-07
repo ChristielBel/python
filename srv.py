@@ -4,9 +4,9 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import time
 import threading
-from queue import Queue
+from queue import Queue, Empty
 from enum import Enum
-from queue import Empty
+
 
 class Stage(Enum):
     """Этапы работы системы"""
@@ -39,7 +39,7 @@ class LiquidComponentSimulator:
         self.simulation_time = 0
         self.waiting_for_operator = False
         self.operator_signal = False
-        self.hold_time_counter = 0  # Счетчик времени выдержки
+        self.hold_time_counter = 0
 
         # Параметры из задания
         self.adc_bits = 10
@@ -91,50 +91,27 @@ class LiquidComponentSimulator:
         self.update_queue = Queue()
 
         self.setup_ui()
-        self.setup_plots()
+
+        # Инициализация начальных значений кодов
+        self.generate_control_word()
+        self.generate_sensor_data()
+        self.update_gui()
 
         # Запуск потока обновления GUI
         self.root.after(100, self.process_queue)
 
     def setup_ui(self):
-        # Основные фреймы
-        main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.grid(row=0, column=0, sticky="wnse")
+        # Основной контейнер
+        main_container = ttk.Frame(self.root)
+        main_container.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        # Левая часть - визуализация
-        left_frame = ttk.LabelFrame(main_frame, text="Визуализация процесса", padding="10")
+        # Левая часть - визуализация и управление
+        left_frame = ttk.LabelFrame(main_container, text="Визуализация процесса", padding="10")
         left_frame.grid(row=0, column=0, sticky="wnse", padx=(0, 10))
 
-        # Правая часть - данные и управление
-        right_frame = ttk.Frame(main_frame)
-        right_frame.grid(row=0, column=1, sticky="wnse")
-
-        # Настройка весов
-        self.root.columnconfigure(0, weight=1)
-        self.root.rowconfigure(0, weight=1)
-        main_frame.columnconfigure(0, weight=2)
-        main_frame.columnconfigure(1, weight=1)
-        main_frame.rowconfigure(0, weight=1)
-
-        # Визуализация емкостей с прокруткой
-        canvas_frame = ttk.Frame(left_frame)
-        canvas_frame.grid(row=0, column=0, sticky="wnse")
-
-        self.tank_canvas = tk.Canvas(canvas_frame, width=550, height=500, bg='white')
+        # Холст для танков
+        self.tank_canvas = tk.Canvas(left_frame, width=550, height=500, bg='white')
         self.tank_canvas.grid(row=0, column=0, sticky="wnse")
-
-        # Вертикальная прокрутка
-        v_scroll = ttk.Scrollbar(canvas_frame, orient="vertical", command=self.tank_canvas.yview)
-        v_scroll.grid(row=0, column=1, sticky="ns")
-
-        # ✅ Горизонтальная прокрутка
-        h_scroll = ttk.Scrollbar(canvas_frame, orient="horizontal", command=self.tank_canvas.xview)
-        h_scroll.grid(row=1, column=0, sticky="we")
-
-        self.tank_canvas.configure(
-            yscrollcommand=v_scroll.set,
-            xscrollcommand=h_scroll.set
-        )
 
         # Управление
         control_frame = ttk.LabelFrame(left_frame, text="Управление", padding="10")
@@ -156,9 +133,13 @@ class LiquidComponentSimulator:
         self.speed_scale.set(1.0)
         self.speed_scale.grid(row=1, column=1, columnspan=4, sticky="we", pady=(10, 0), padx=5)
 
-        # Панель данных
+        # Правая часть - данные и графики
+        right_frame = ttk.Frame(main_container)
+        right_frame.grid(row=0, column=1, sticky="wnse")
+
+        # Верхняя правая часть - данные системы
         data_frame = ttk.LabelFrame(right_frame, text="Данные системы", padding="10")
-        data_frame.grid(row=0, column=0, sticky="wnse")
+        data_frame.grid(row=0, column=0, sticky="wnse", pady=(0, 10))
 
         # Температуры
         temp_frame = ttk.LabelFrame(data_frame, text="Температуры (°C)", padding="5")
@@ -192,16 +173,15 @@ class LiquidComponentSimulator:
             ttk.Entry(volt_frame, textvariable=var, width=10, state='readonly').grid(row=i + 1, column=1)
 
         # Регулировка времени
-        time_frame = ttk.LabelFrame(data_frame, text="Регулировка времени (сек)", padding="5")
+        time_frame = ttk.LabelFrame(data_frame, text="Регулировка времени", padding="5")
         time_frame.grid(row=2, column=0, sticky="we", pady=(0, 10))
 
         # Время наполнения емкости 1
-        ttk.Label(time_frame, text="Наполнение емкости 1:").grid(row=0, column=0, sticky=tk.W)
-        self.pump_run_time_var = tk.StringVar(value="90.0")
-        pump_run_entry = ttk.Entry(time_frame, textvariable=self.pump_run_time_var, width=10)
-        pump_run_entry.grid(row=0, column=1, padx=5)
-        ttk.Button(time_frame, text="Применить",
-                   command=lambda: self.apply_time_setting('pump_run')).grid(row=0, column=2)
+        ttk.Label(time_frame, text="Умножить все времена на:").grid(row=0, column=0, sticky=tk.W)
+        self.time_factor_var = tk.StringVar(value="1.0")
+        time_entry = ttk.Entry(time_frame, textvariable=self.time_factor_var, width=10)
+        time_entry.grid(row=0, column=1, padx=5)
+        ttk.Button(time_frame, text="Применить", command=self.apply_time_factor).grid(row=0, column=2)
 
         # Время перелива
         ttk.Label(time_frame, text="Время перелива:").grid(row=1, column=0, sticky=tk.W, pady=(5, 0))
@@ -235,17 +215,18 @@ class LiquidComponentSimulator:
 
         # Расшифровка кодов
         decode_frame = ttk.LabelFrame(data_frame, text="Расшифровка", padding="5")
-        decode_frame.grid(row=4, column=0, sticky="we")
+        decode_frame.grid(row=4, column=0, sticky="we", pady=(0, 10))
 
-        self.decode_text = tk.Text(decode_frame, height=14, width=40, font=('Courier', 9))
+        # Увеличиваем окно для расшифровки
+        self.decode_text = tk.Text(decode_frame, height=15, width=50, font=('Courier', 9))
         self.decode_text.grid(row=0, column=0)
         scrollbar = ttk.Scrollbar(decode_frame, orient="vertical", command=self.decode_text.yview)
         scrollbar.grid(row=0, column=1, sticky="ns")
         self.decode_text.config(yscrollcommand=scrollbar.set)
 
         # Статус
-        status_frame = ttk.Frame(right_frame)
-        status_frame.grid(row=1, column=0, sticky="we", pady=(10, 0))
+        status_frame = ttk.Frame(data_frame)
+        status_frame.grid(row=5, column=0, sticky="we", pady=(10, 0))
 
         self.status_var = tk.StringVar(value="Готов к работе")
         ttk.Label(status_frame, textvariable=self.status_var, font=('Arial', 10, 'bold')).pack()
@@ -259,73 +240,75 @@ class LiquidComponentSimulator:
         self.hold_time_var_display = tk.StringVar(value="Выдержка: 0/1800 с")
         ttk.Label(status_frame, textvariable=self.hold_time_var_display).pack()
 
-        # Настройка изменения размера
+        # Графики справа от данных
+        plots_frame = ttk.LabelFrame(right_frame, text="Графики", padding="10")
+        plots_frame.grid(row=0, column=1, sticky="wnse", padx=(10, 0))
+
+        # Создание графиков
+        self.setup_plots(plots_frame)
+
+        # Настройка весов для растяжения
+        main_container.columnconfigure(0, weight=1)
+        main_container.columnconfigure(1, weight=1)
+        main_container.rowconfigure(0, weight=1)
+
         left_frame.rowconfigure(0, weight=1)
         left_frame.columnconfigure(0, weight=1)
-        canvas_frame.rowconfigure(0, weight=1)
-        canvas_frame.columnconfigure(0, weight=1)
-        right_frame.columnconfigure(0, weight=1)
-        right_frame.rowconfigure(0, weight=1)
-        data_frame.columnconfigure(0, weight=1)
 
-    def setup_plots(self):
-        # Создание графиков
-        self.fig = Figure(figsize=(8, 8), dpi=100)
+        right_frame.columnconfigure(0, weight=1)
+        right_frame.columnconfigure(1, weight=2)  # Графики занимают больше места
+        right_frame.rowconfigure(0, weight=1)
+
+    def setup_plots(self, parent):
+        # Создание графиков с 4-мя subplots
+        self.fig = Figure(figsize=(12, 10), dpi=80)
 
         # График 1: Напряжения (насос и нагреватели)
-        self.ax1 = self.fig.add_subplot(311)
+        self.ax1 = self.fig.add_subplot(411)
         self.ax1.set_title('Аналоговые значения напряжений')
-        self.ax1.set_xlabel('Время, с')
         self.ax1.set_ylabel('Напряжение, В')
         self.ax1.grid(True, alpha=0.3)
+        self.ax1.set_ylim(0, 100)
 
         self.pump_line, = self.ax1.plot([], [], 'b-', label='Насос', linewidth=2)
         self.heater1_line, = self.ax1.plot([], [], 'r-', label='Нагрев 1', alpha=0.7)
         self.heater2_line, = self.ax1.plot([], [], 'g-', label='Нагрев 2', alpha=0.7)
         self.heater3_line, = self.ax1.plot([], [], 'm-', label='Нагрев 3', alpha=0.7)
-        self.ax1.legend(loc='upper right')
-        self.ax1.set_ylim(0, 100)
+        self.ax1.legend(loc='upper right', fontsize='small')
 
-        # График 2: Температуры
-        self.ax2 = self.fig.add_subplot(312)
-        self.ax2.set_title('Температуры в емкостях')
-        self.ax2.set_xlabel('Время, с')
+        # График 2: Температура емкости 1
+        self.ax2 = self.fig.add_subplot(412)
+        self.ax2.set_title('Температура емкости 1')
         self.ax2.set_ylabel('Температура, °C')
         self.ax2.grid(True, alpha=0.3)
-
-        self.temp1_line, = self.ax2.plot([], [], 'r-', label='Емкость 1', linewidth=2)
-        self.temp2_line, = self.ax2.plot([], [], 'g-', label='Емкость 2', linewidth=2)
-        self.temp3_line, = self.ax2.plot([], [], 'b-', label='Емкость 3', linewidth=2)
-        self.ax2.legend(loc='upper right')
         self.ax2.set_ylim(0, 600)
+        self.temp1_line, = self.ax2.plot([], [], 'r-', linewidth=2)
 
-        # График 3: Цифровые коды
-        self.ax3 = self.fig.add_subplot(313)
-        self.ax3.set_title('Цифровые коды ЦАП и АЦП')
-        self.ax3.set_xlabel('Время, с')
-        self.ax3.set_ylabel('Код (десятичный)')
+        # График 3: Температура емкости 2
+        self.ax3 = self.fig.add_subplot(413)
+        self.ax3.set_title('Температура емкости 2')
+        self.ax3.set_ylabel('Температура, °C')
         self.ax3.grid(True, alpha=0.3)
+        self.ax3.set_ylim(0, 600)
+        self.temp2_line, = self.ax3.plot([], [], 'g-', linewidth=2)
 
-        self.dac_line, = self.ax3.plot([], [], 'r-', label='Код ЦАП', linewidth=2)
-        self.adc_line, = self.ax3.plot([], [], 'b-', label='Код АЦП', linewidth=2)
-        self.ax3.legend(loc='upper right')
-        self.ax3.set_ylim(0, 1024)
+        # График 4: Температура емкости 3
+        self.ax4 = self.fig.add_subplot(414)
+        self.ax4.set_title('Температура емкости 3')
+        self.ax4.set_xlabel('Время, с')
+        self.ax4.set_ylabel('Температура, °C')
+        self.ax4.grid(True, alpha=0.3)
+        self.ax4.set_ylim(0, 600)
+        self.temp3_line, = self.ax4.plot([], [], 'b-', linewidth=2)
 
         self.fig.tight_layout()
 
         # Встраивание графиков в Tkinter
-        canvas = FigureCanvasTkAgg(self.fig, master=self.root)
-        canvas_widget = canvas.get_tk_widget()
-        canvas_widget.grid(row=0, column=2, sticky="wnse", padx=(10, 0))
-
-        # Настройка весов для графиков
-        self.root.columnconfigure(2, weight=2)
+        self.canvas_plot = FigureCanvasTkAgg(self.fig, master=parent)
+        self.canvas_plot.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
     def draw_tanks(self):
         self.tank_canvas.delete("all")
-
-        # Настраиваем область отрисовки
-        self.tank_canvas.configure(scrollregion=(0, 0, 550, 1000))
 
         tank_width = 80
         tank_height = 200
@@ -425,23 +408,7 @@ class LiquidComponentSimulator:
             text=f"РЕЖИМ: {self.get_stage_name()}",
             font=('Arial', 10, 'bold'),
             fill='blue',
-            width=520,  # <<< ВАЖНО
-            anchor='n',
-            justify='center'
-        )
-
-        # Отображение настроек времени
-        time_text = (
-            f"Наполнение: {self.pump_run_time:.0f} с | "
-            f"Перелив: {self.fill_time:.0f} с | "
-            f"Выдержка: {self.hold_time:.0f} с"
-        )
-        self.tank_canvas.create_text(
-            275, 350,
-            text=time_text,
-            font=('Arial', 9),
-            fill='green',
-            width=520,  # <<< ВАЖНО
+            width=520,
             anchor='n',
             justify='center'
         )
@@ -493,22 +460,28 @@ class LiquidComponentSimulator:
         }
         return names.get(self.current_stage, "НЕИЗВЕСТНЫЙ ЭТАП")
 
+    def apply_time_factor(self):
+        """Применить коэффициент ко всем временным параметрам"""
+        try:
+            factor = float(self.time_factor_var.get())
+            if 0.1 <= factor <= 10.0:
+                self.pump_run_time = 90.0 * factor
+                self.fill_time = 90.0 * factor
+                self.hold_time = 1800.0 * factor
+                self.drain_time = 90.0 * factor
+                messagebox.showinfo("Успех", f"Временные параметры умножены на {factor}")
+            else:
+                messagebox.showerror("Ошибка", "Коэффициент должен быть от 0.1 до 10")
+        except ValueError:
+            messagebox.showerror("Ошибка", "Введите числовое значение")
+
     def apply_time_setting(self, setting_type):
         """Применить настройки времени"""
         try:
-            if setting_type == 'pump_run':
-                value = float(self.pump_run_time_var.get())
-                if 1 <= value <= 600:  # Ограничение от 1 до 600 секунд
-                    self.pump_run_time = value
-                    messagebox.showinfo("Успех", f"Время наполнения установлено: {value} сек")
-                else:
-                    messagebox.showerror("Ошибка", "Введите значение от 1 до 600 секунд")
-
-            elif setting_type == 'fill':
+            if setting_type == 'fill':
                 value = float(self.fill_time_var.get())
                 if 1 <= value <= 600:
                     self.fill_time = value
-                    self.drain_time = value  # Можно также изменить время слива
                     messagebox.showinfo("Успех", f"Время перелива установлено: {value} сек")
                 else:
                     messagebox.showerror("Ошибка", "Введите значение от 1 до 600 секунд")
@@ -531,6 +504,8 @@ class LiquidComponentSimulator:
         self.operator_signal = True
         self.operator_btn.config(state='disabled')
         self.status_var.set("Получен сигнал оператора")
+        self.generate_sensor_data()  # Обновить данные сенсора
+        self.update_gui()
 
     def start_simulation(self):
         if not self.running:
@@ -538,19 +513,25 @@ class LiquidComponentSimulator:
             self.paused = False
             self.current_stage = Stage.PUMP_START
             self.stage_progress = 0
+            self.simulation_time = 0
             self.status_var.set("Симуляция запущена")
             self.operator_btn.config(state='normal')
             threading.Thread(target=self.simulation_thread, daemon=True).start()
+        elif self.paused:
+            self.paused = False
+            self.status_var.set("Симуляция продолжается")
 
     def pause_simulation(self):
-        self.paused = not self.paused
-        if self.paused:
-            self.status_var.set("Симуляция на паузе")
-        else:
-            self.status_var.set("Симуляция продолжается")
+        if self.running:
+            self.paused = not self.paused
+            if self.paused:
+                self.status_var.set("Симуляция на паузе")
+            else:
+                self.status_var.set("Симуляция продолжается")
 
     def stop_simulation(self):
         self.running = False
+        self.paused = False
         self.status_var.set("Симуляция остановлена")
 
     def reset_simulation(self):
@@ -582,7 +563,7 @@ class LiquidComponentSimulator:
         self.heater3_data = []
 
         # Восстановление значений времени по умолчанию
-        self.pump_run_time_var.set("90.0")
+        self.time_factor_var.set("1.0")
         self.fill_time_var.set("90.0")
         self.hold_time_var.set("1800.0")
         self.pump_run_time = 90.0
@@ -590,44 +571,71 @@ class LiquidComponentSimulator:
         self.hold_time = 1800.0
         self.drain_time = 90.0
 
+        # Обновление управляющих слов
+        self.generate_control_word()
+        self.generate_sensor_data()
         self.update_gui()
         self.status_var.set("Система сброшена")
 
     def simulation_thread(self):
         """Основной поток симуляции"""
-        while self.running and not self.paused:
-            speed_factor = self.speed_scale.get()
-            time_step = 0.1 / speed_factor
+        last_time = time.time()
+        while self.running:
+            if not self.paused:
+                current_time = time.time()
+                elapsed = current_time - last_time
+                last_time = current_time
 
-            # Обновление этапа
-            self.update_stage(time_step)
+                speed_factor = self.speed_scale.get()
+                effective_time_step = elapsed * speed_factor
 
-            # Обновление температуры емкостей
-            self.update_temperatures(time_step)
+                # Обновление этапа
+                self.update_stage(effective_time_step)
 
-            # Обновление данных для графиков
-            self.time_data.append(self.simulation_time)
-            self.pump_data.append(self.pump_voltage)
-            self.temp1_data.append(self.tank_temperatures[0])
-            self.temp2_data.append(self.tank_temperatures[1])
-            self.temp3_data.append(self.tank_temperatures[2])
-            self.heater1_data.append(self.heating_states[0] * 36 if self.heating_states[0] == 1 else
-                                     self.heating_states[0] * 86 if self.heating_states[0] == 2 else 0)
-            self.heater2_data.append(self.heating_states[1] * 36)
-            self.heater3_data.append(self.heating_states[2] * 36 if self.heating_states[2] == 1 else
-                                     self.heating_states[2] * 86 if self.heating_states[2] == 2 else 0)
+                # Обновление температуры
+                self.update_temperatures(effective_time_step)
 
-            # Генерация управляющих слов
-            self.generate_control_word()
-            self.generate_sensor_data()
+                # Обновление данных для графиков
+                self.time_data.append(self.simulation_time)
+                self.pump_data.append(self.pump_voltage)
+                self.temp1_data.append(self.tank_temperatures[0])
+                self.temp2_data.append(self.tank_temperatures[1])
+                self.temp3_data.append(self.tank_temperatures[2])
 
-            # Обновление времени
-            self.simulation_time += time_step
+                # Данные для нагревателей
+                h1 = 0
+                if self.heating_states[0] == 1:
+                    h1 = 36
+                elif self.heating_states[0] == 2:
+                    h1 = 86
 
-            # Отправка обновления в GUI
-            self.update_queue.put(True)
+                h2 = 0
+                if self.heating_states[1] == 1:
+                    h2 = 36
+                elif self.heating_states[1] == 2:
+                    h2 = 86
 
-            time.sleep(time_step)
+                h3 = 0
+                if self.heating_states[2] == 1:
+                    h3 = 36
+                elif self.heating_states[2] == 2:
+                    h3 = 86
+
+                self.heater1_data.append(h1)
+                self.heater2_data.append(h2)
+                self.heater3_data.append(h3)
+
+                # Обновление времени симуляции
+                self.simulation_time += elapsed
+
+                # Обновление управляющих слов
+                self.generate_control_word()
+                self.generate_sensor_data()
+
+                # Отправка обновления в GUI
+                self.update_queue.put(True)
+
+            time.sleep(0.01)
 
     def update_stage(self, time_step):
         """Обновление текущего этапа работы"""
@@ -650,6 +658,13 @@ class LiquidComponentSimulator:
                 if self.tank_volumes[0] < 100:
                     increment = 100 / self.pump_run_time * time_step
                     self.tank_volumes[0] = min(100, self.tank_volumes[0] + increment)
+                if self.tank_temperatures[0] < 490:
+                    if self.tank_temperatures[0] < 470:
+                        self.heating_states[0] = 2  # Интенсивный
+                    else:
+                        self.heating_states[0] = 1  # Нормальный
+                else:
+                    self.heating_states[0] = 0
             else:
                 self.current_stage = Stage.PUMP_STOP
                 self.stage_progress = 0
@@ -946,6 +961,8 @@ class LiquidComponentSimulator:
                 temp = float(temp_var.get())
                 if 0 <= temp <= 600:
                     self.tank_temperatures[tank_idx] = temp
+                    self.generate_control_word()
+                    self.generate_sensor_data()
                     self.update_gui()
                     dialog.destroy()
                 else:
@@ -1009,32 +1026,15 @@ class LiquidComponentSimulator:
             self.temp2_line.set_data(time_display, self.temp2_data[-display_points:])
             self.temp3_line.set_data(time_display, self.temp3_data[-display_points:])
 
-            # График 3: Коды
-            # Расчет кодов для последних точек
-            dac_codes = [self.calculate_dac_code(v) for v in self.pump_data[-display_points:]]
-            adc_codes = [self.calculate_adc_code(t) for t in self.temp1_data[-display_points:]]
-
-            self.dac_line.set_data(time_display, dac_codes)
-            self.adc_line.set_data(time_display, adc_codes)
-
             # Обновление осей
-            self.ax1.relim()
-            self.ax1.autoscale_view(scalex=False)
-            if len(time_display) > 1:
-                self.ax1.set_xlim(min(time_display), max(time_display))
-
-            self.ax2.relim()
-            self.ax2.autoscale_view(scalex=False)
-            if len(time_display) > 1:
-                self.ax2.set_xlim(min(time_display), max(time_display))
-
-            self.ax3.relim()
-            self.ax3.autoscale_view(scalex=False)
-            if len(time_display) > 1:
-                self.ax3.set_xlim(min(time_display), max(time_display))
+            for ax in [self.ax1, self.ax2, self.ax3, self.ax4]:
+                ax.relim()
+                ax.autoscale_view(scalex=False)
+                if len(time_display) > 1:
+                    ax.set_xlim(min(time_display), max(time_display))
 
             # Перерисовка
-            self.fig.canvas.draw_idle()
+            self.canvas_plot.draw_idle()
 
     def process_queue(self):
         """Обработка очереди обновлений"""
@@ -1047,6 +1047,7 @@ class LiquidComponentSimulator:
             pass
         finally:
             self.root.after(100, self.process_queue)
+
 
 def main():
     root = tk.Tk()
