@@ -493,19 +493,58 @@ class LiquidComponentSimulator:
 
     def send_operator_signal(self):
         """Отправить сигнал оператора"""
-        self.operator_signal = True
-        self.operator_btn.config(state='disabled')
-        self.status_var.set("Получен сигнал оператора")
+        if self.current_stage == Stage.WAIT_OPERATOR_TANK2:
+            temp = self.tank_temperatures[1]
+            if 355 <= temp <= 365:  # Проверяем температуру
+                self.operator_signal = True
+                self.operator_btn.config(state='disabled')
+                self.status_var.set("Сигнал оператора принят, начинается перелив")
+            else:
+                messagebox.showwarning("Предупреждение",
+                                       f"Температура емкости 2: {temp:.1f}°C\n"
+                                       f"Необходимо 360±5°C (355-365°C)\n"
+                                       f"Дождитесь стабилизации температуры")
+                return
+        elif self.current_stage == Stage.MAINTAIN_TANK2:
+            # Если кнопка все еще доступна в MAINTAIN_TANK2
+            temp = self.tank_temperatures[1]
+            if 355 <= temp <= 365:
+                self.operator_signal = True
+                self.operator_btn.config(state='disabled')
+                self.status_var.set("Сигнал оператора принят")
+            else:
+                messagebox.showwarning("Предупреждение",
+                                       f"Температура емкости 2: {temp:.1f}°C\n"
+                                       f"Необходимо 360±5°C (355-365°C)\n"
+                                       f"Дождитесь стабилизации температуры")
+                return
+        else:
+            self.operator_signal = True
+            self.operator_btn.config(state='disabled')
+            self.status_var.set("Получен сигнал оператора")
+
         self.generate_sensor_data()
         self.update_gui()
 
     def start_simulation(self):
         if not self.running:
+            self.time_data = []
+            self.pump_data = []
+            self.temp1_data = []
+            self.temp2_data = []
+            self.temp3_data = []
+            self.heater1_data = []
+            self.heater2_data = []
+            self.heater3_data = []
+
+            self.tank_temperatures = [25, 25, 25]
+
             self.running = True
             self.paused = False
             self.current_stage = Stage.PUMP_START
             self.stage_progress = 0
             self.simulation_time = 0
+            self.hold_time_counter = 0
             self.status_var.set("Симуляция запущена")
             self.operator_btn.config(state='normal')
             threading.Thread(target=self.simulation_thread, daemon=True).start()
@@ -572,11 +611,14 @@ class LiquidComponentSimulator:
     def simulation_thread(self):
         """Основной поток симуляции"""
         last_time = time.time()
+
         while self.running:
             if not self.paused:
                 current_time = time.time()
                 elapsed = current_time - last_time
                 last_time = current_time
+
+                elapsed = min(elapsed, 0.1)
 
                 speed_factor = self.speed_scale.get()
                 effective_time_step = elapsed * speed_factor
@@ -595,30 +637,16 @@ class LiquidComponentSimulator:
                 self.temp3_data.append(self.tank_temperatures[2])
 
                 # Данные для нагревателей
-                h1 = 0
-                if self.heating_states[0] == 1:
-                    h1 = 36
-                elif self.heating_states[0] == 2:
-                    h1 = 86
-
-                h2 = 0
-                if self.heating_states[1] == 1:
-                    h2 = 36
-                elif self.heating_states[1] == 2:
-                    h2 = 86
-
-                h3 = 0
-                if self.heating_states[2] == 1:
-                    h3 = 36
-                elif self.heating_states[2] == 2:
-                    h3 = 86
+                h1 = 86 if self.heating_states[0] == 2 else (36 if self.heating_states[0] == 1 else 0)
+                h2 = 86 if self.heating_states[1] == 2 else (36 if self.heating_states[1] == 1 else 0)
+                h3 = 86 if self.heating_states[2] == 2 else (36 if self.heating_states[2] == 1 else 0)
 
                 self.heater1_data.append(h1)
                 self.heater2_data.append(h2)
                 self.heater3_data.append(h3)
 
-                # Обновление времени симуляции
-                self.simulation_time += elapsed
+                # Обновление времени симуляции с учетом скорости
+                self.simulation_time += effective_time_step
 
                 # Обновление управляющих слов
                 self.generate_control_word()
@@ -633,57 +661,54 @@ class LiquidComponentSimulator:
         """Обновление текущего этапа работы"""
 
         if self.current_stage == Stage.PUMP_START:
-            # Линейное увеличение напряжения на насосе с 0 до 56 В
-            if self.pump_voltage < 56:
-                increment = 56 / self.pump_start_time * time_step
-                self.pump_voltage = min(56, self.pump_voltage + increment)
-                self.pump_state = True
-            else:
+            # Увеличение напряжения на насосе с 0 до 56 В
+            self.stage_progress += time_step
+            progress = min(1.0, self.stage_progress / self.pump_start_time)
+            self.pump_voltage = 56.0 * progress
+            self.pump_state = True
+
+            if progress >= 1.0:
                 self.current_stage = Stage.PUMP_RUN
                 self.stage_progress = 0
 
         elif self.current_stage == Stage.PUMP_RUN:
-            # Ожидание работы насоса (наполнение емкости 1)
+            # Ожидание 90 секунд работы насоса (наполнение емкости 1)
             self.stage_progress += time_step
             if self.stage_progress < self.pump_run_time:
                 # Наполнение первой емкости
                 if self.tank_volumes[0] < 100:
                     increment = 100 / self.pump_run_time * time_step
                     self.tank_volumes[0] = min(100, self.tank_volumes[0] + increment)
-                if self.tank_temperatures[0] < 490:
-                    if self.tank_temperatures[0] < 470:
-                        self.heating_states[0] = 2  # Интенсивный
-                    else:
-                        self.heating_states[0] = 1  # Нормальный
-                else:
-                    self.heating_states[0] = 0
             else:
                 self.current_stage = Stage.PUMP_STOP
                 self.stage_progress = 0
 
         elif self.current_stage == Stage.PUMP_STOP:
-            # Линейное уменьшение напряжения на насосе с 56 до 0 В
-            if self.pump_voltage > 0:
-                decrement = 56 / self.pump_stop_time * time_step
-                self.pump_voltage = max(0, self.pump_voltage - decrement)
-            else:
+            # Уменьшение напряжения на насосе с 56 до 0 В
+            self.stage_progress += time_step
+            progress = min(1.0, self.stage_progress / self.pump_stop_time)
+            self.pump_voltage = 56.0 * (1.0 - progress)
+
+            if progress >= 1.0:
                 self.pump_state = False
+                self.pump_voltage = 0
                 self.current_stage = Stage.HEAT_TANK1
                 self.stage_progress = 0
 
         elif self.current_stage == Stage.HEAT_TANK1:
             # Нагрев первой емкости до 490°C
-            if self.tank_temperatures[0] < 490:
-                # Определение режима нагрева
-                if self.tank_temperatures[0] < 470:  # Разница более 20°
-                    self.heating_states[0] = 2  # Интенсивный
+            temp = self.tank_temperatures[0]
+
+            if temp < 490:
+                if temp < 470:
+                    self.heating_states[0] = 2  # Интенсивный нагрев
                 else:
-                    self.heating_states[0] = 1  # Нормальный
+                    self.heating_states[0] = 1  # Нормальный нагрев
             else:
-                self.heating_states[0] = 0  # Выключить нагрев
+                self.heating_states[0] = 0
                 self.current_stage = Stage.FILL_TANK1_TO_TANK2
                 self.stage_progress = 0
-                self.valve_states[0] = True  # Открыть клапан 1
+                self.valve_states[0] = True
 
         elif self.current_stage == Stage.FILL_TANK1_TO_TANK2:
             # Перелив из 1 во 2 емкость
@@ -693,45 +718,78 @@ class LiquidComponentSimulator:
                     transfer = 100 / self.fill_time * time_step
                     self.tank_volumes[0] = max(0, self.tank_volumes[0] - transfer)
                     self.tank_volumes[1] = min(100, self.tank_volumes[1] + transfer)
-                    # Температура второй емкости становится равна температуре первой
-                    self.tank_temperatures[1] = self.tank_temperatures[0]
+                    # При переливе температура второй емкости плавно выравнивается
+                    target_temp = self.tank_temperatures[0]
+                    current_temp = self.tank_temperatures[1]
+                    if abs(target_temp - current_temp) > 0.1:
+                        temp_change = (target_temp - current_temp) * (time_step / self.fill_time)
+                        self.tank_temperatures[1] += temp_change
             else:
-                self.valve_states[0] = False  # Закрыть клапан
+                self.valve_states[0] = False
                 self.current_stage = Stage.COOL_TANK2
                 self.stage_progress = 0
 
         elif self.current_stage == Stage.COOL_TANK2:
             # Охлаждение второй емкости до 360°C
-            if self.tank_temperatures[1] > 360:
-                # Естественное охлаждение
+            temp = self.tank_temperatures[1]
+
+            if temp > 360:
+                # Активное охлаждение - выключаем нагрев и быстро охлаждаем
                 self.heating_states[1] = 0
+                cooling_rate = 15 * time_step  # 15°C/сек для быстрого охлаждения
+                self.tank_temperatures[1] = max(360, temp - cooling_rate)
             else:
+                # Достигли 360°C
                 self.current_stage = Stage.MAINTAIN_TANK2
                 self.stage_progress = 0
+                self.heating_states[1] = 0  # Гарантируем выключение нагрева
 
         elif self.current_stage == Stage.MAINTAIN_TANK2:
             # Поддержание температуры 360°C во второй емкости
-            if self.tank_temperatures[1] < 360:
-                self.heating_states[1] = 1  # Нормальный нагрев
-            elif self.tank_temperatures[1] >= 360:
-                self.heating_states[1] = 0  # Выключить нагрев
+            temp = self.tank_temperatures[1]
 
-            # Проверка сигнала оператора
+            # Гистерезис: включаем нагрев при 355°C, выключаем при 365°C
+            if temp < 355:
+                self.heating_states[1] = 1  # Включить нормальный нагрев
+            elif temp > 365:
+                self.heating_states[1] = 0  # Выключить нагрев
+            # Если температура между 355 и 365, не меняем состояние нагрева
+
+            # Если температура в допустимом диапазоне и пришел сигнал оператора
             if self.operator_signal:
-                self.current_stage = Stage.FILL_TANK2_TO_TANK3
-                self.stage_progress = 0
-                self.valve_states[1] = True
-                self.operator_signal = False
-                return
+                if 355 <= temp <= 365:  # Допуск ±5°C
+                    self.current_stage = Stage.FILL_TANK2_TO_TANK3
+                    self.stage_progress = 0
+                    self.valve_states[1] = True
+                    self.operator_signal = False
+                    self.status_var.set("Начинается перелив из емкости 2 в емкость 3")
             else:
+                # Если нет сигнала оператора, переходим в режим ожидания
                 self.current_stage = Stage.WAIT_OPERATOR_TANK2
 
         elif self.current_stage == Stage.WAIT_OPERATOR_TANK2:
-            # Ожидание сигнала оператора
+            # Ожидание сигнала оператора - просто ждем
+            # Температура поддерживается так же, как в MAINTAIN_TANK2
+            temp = self.tank_temperatures[1]
+
+            # Гистерезис: включаем нагрев при 355°C, выключаем при 365°C
+            if temp < 355:
+                self.heating_states[1] = 1  # Включить нормальный нагрев
+            elif temp > 365:
+                self.heating_states[1] = 0  # Выключить нагрев
+
+            # Проверяем сигнал оператора
             if self.operator_signal:
-                self.current_stage = Stage.FILL_TANK2_TO_TANK3
-                self.stage_progress = 0
-                self.valve_states[1] = True
+                if 355 <= temp <= 365:  # Допуск ±5°C
+                    self.current_stage = Stage.FILL_TANK2_TO_TANK3
+                    self.stage_progress = 0
+                    self.valve_states[1] = True
+                    self.operator_signal = False
+                    self.status_var.set("Начинается перелив из емкости 2 в емкость 3")
+                else:
+                    # Температура не в допустимом диапазоне
+                    self.status_var.set(f"Температура емкости 2: {temp:.1f}°C. Нужно 360±5°C")
+                    self.operator_signal = False  # Сбрасываем сигнал
 
         elif self.current_stage == Stage.FILL_TANK2_TO_TANK3:
             # Перелив из 2 в 3 емкость
@@ -741,42 +799,58 @@ class LiquidComponentSimulator:
                     transfer = 100 / self.fill_time * time_step
                     self.tank_volumes[1] = max(0, self.tank_volumes[1] - transfer)
                     self.tank_volumes[2] = min(100, self.tank_volumes[2] + transfer)
-                    # Температура третьей емкости становится равна температуре второй
-                    self.tank_temperatures[2] = self.tank_temperatures[1]
+                    # При переливе температура третьей емкости плавно выравнивается
+                    target_temp = self.tank_temperatures[1]  # 360°C
+                    current_temp = self.tank_temperatures[2]
+                    if abs(target_temp - current_temp) > 0.1:
+                        temp_change = (target_temp - current_temp) * (time_step / self.fill_time)
+                        self.tank_temperatures[2] += temp_change
             else:
-                self.valve_states[1] = False  # Закрыть клапан
+                self.valve_states[1] = False
                 self.current_stage = Stage.HEAT_TANK3
                 self.stage_progress = 0
+                self.status_var.set("Начинается нагрев емкости 3 до 564°C")
 
         elif self.current_stage == Stage.HEAT_TANK3:
             # Нагрев третьей емкости до 564°C
-            if self.tank_temperatures[2] < 564:
-                if self.tank_temperatures[2] < 544:  # Разница более 20°
-                    self.heating_states[2] = 2  # Интенсивный
+            temp = self.tank_temperatures[2]
+
+            if temp < 564:
+                if temp < 544:
+                    self.heating_states[2] = 2  # Интенсивный нагрев
                 else:
-                    self.heating_states[2] = 1  # Нормальный
+                    self.heating_states[2] = 1  # Нормальный нагрев
             else:
-                self.heating_states[2] = 0  # Выключить нагрев
+                self.heating_states[2] = 0
                 self.current_stage = Stage.MAINTAIN_TANK3
                 self.stage_progress = 0
                 self.hold_time_counter = 0
+                self.status_var.set("Начинается выдержка при 564°C")
 
         elif self.current_stage == Stage.MAINTAIN_TANK3:
             # Выдержка при 564°C
-            self.hold_time_counter += time_step
+            temp = self.tank_temperatures[2]
 
-            # Поддержание температуры
-            if self.tank_temperatures[2] < 544:
-                self.heating_states[2] = 2  # Интенсивный
-            elif self.tank_temperatures[2] < 564:
-                self.heating_states[2] = 1  # Нормальный
+            # Поддержание температуры с гистерезисом
+            if temp < 544:
+                self.heating_states[2] = 2  # Интенсивный нагрев
+            elif temp < 564:
+                self.heating_states[2] = 1  # Нормальный нагрев
             else:
                 self.heating_states[2] = 0  # Выключить нагрев
+
+            # Увеличиваем счетчик выдержки только когда температура близка к целевой
+            if 559 <= temp <= 569:  # Допуск ±5°C
+                self.hold_time_counter += time_step
+            else:
+                # Если температура вышла за пределы допуска, не считаем это время выдержкой
+                pass
 
             if self.hold_time_counter >= self.hold_time:
                 self.current_stage = Stage.DRAIN_TANK3
                 self.stage_progress = 0
-                self.valve_states[2] = True  # Открыть клапан 3
+                self.valve_states[2] = True
+                self.status_var.set("Начинается слив из емкости 3")
 
         elif self.current_stage == Stage.DRAIN_TANK3:
             # Слив из третьей емкости
@@ -786,22 +860,35 @@ class LiquidComponentSimulator:
                     drain = 100 / self.drain_time * time_step
                     self.tank_volumes[2] = max(0, self.tank_volumes[2] - drain)
             else:
-                self.valve_states[2] = False  # Закрыть клапан
-                # Цикл завершен
+                self.valve_states[2] = False
                 self.current_stage = Stage.INIT
                 self.running = False
                 self.status_var.set(f"Цикл завершен за {self.simulation_time:.1f} сек")
 
     def update_temperatures(self, time_step):
-        """Обновление температур в емкостях"""
+        """Обновление температур в емкостях с учетом объемов жидкости"""
         for i in range(3):
+            if self.tank_volumes[i] == 0:
+                # Если емкость пуста, температура становится комнатной
+                self.tank_temperatures[i] = 25.0
+                continue
+
             if self.heating_states[i] == 1:  # Нормальный нагрев
-                self.tank_temperatures[i] += 5 * time_step  # 5°C/сек
+                # Нагрев зависит от объема жидкости
+                heat_rate = 5 * time_step
+                self.tank_temperatures[i] += heat_rate
             elif self.heating_states[i] == 2:  # Интенсивный нагрев
-                self.tank_temperatures[i] += 10 * time_step  # 10°C/сек
+                heat_rate = 10 * time_step
+                self.tank_temperatures[i] += heat_rate
             elif self.heating_states[i] == 0:  # Охлаждение
+                # Охлаждение зависит от разницы с комнатной температурой
                 if self.tank_temperatures[i] > 25:
-                    self.tank_temperatures[i] -= 2 * time_step  # 2°C/сек естественное охлаждение
+                    cooling_factor = 0.05 * (self.tank_temperatures[i] - 25) / 500
+                    cooling_rate = 2 * time_step * (1 + cooling_factor)
+                    self.tank_temperatures[i] = max(25, self.tank_temperatures[i] - cooling_rate)
+
+            # Ограничиваем температуру разумными пределами
+            self.tank_temperatures[i] = max(25, min(700, self.tank_temperatures[i]))
 
     def generate_control_word(self):
         """Генерация управляющего слова для порта 1h"""
@@ -996,7 +1083,23 @@ class LiquidComponentSimulator:
 
         # Обновление кнопки оператора
         if self.current_stage == Stage.WAIT_OPERATOR_TANK2:
-            self.operator_btn.config(state='normal')
+            temp = self.tank_temperatures[1]
+            if 355 <= temp <= 365 and not self.operator_signal:
+                self.operator_btn.config(state='normal')
+                self.status_var.set(f"Температура емкости 2: {temp:.1f}°C. Готов к переливу")
+            else:
+                self.operator_btn.config(state='disabled')
+                if not (355 <= temp <= 365):
+                    self.status_var.set(f"Температура емкости 2: {temp:.1f}°C. Необходимо 360±5°C")
+        elif self.current_stage == Stage.MAINTAIN_TANK2:
+            temp = self.tank_temperatures[1]
+            if 355 <= temp <= 365 and not self.operator_signal:
+                self.operator_btn.config(state='normal')
+                self.status_var.set(f"Температура емкости 2: {temp:.1f}°C. Готов к переливу")
+            else:
+                self.operator_btn.config(state='disabled')
+                if not (355 <= temp <= 365):
+                    self.status_var.set(f"Температура емкости 2: {temp:.1f}°C. Необходимо 360±5°C")
         else:
             self.operator_btn.config(state='disabled')
 
