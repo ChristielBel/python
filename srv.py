@@ -7,7 +7,6 @@ import threading
 from queue import Queue, Empty
 from enum import Enum
 
-
 class Stage(Enum):
     """Этапы работы системы"""
     INIT = 0
@@ -48,7 +47,7 @@ class LiquidComponentSimulator:
         self.dac_range = (0, 90)
         self.max_dac_time = 20  # мс
 
-        # Временные параметры (регулируемые)
+        # Регулируемые параметры
         self.pump_start_time = 3.5  # Время набора напряжения насоса (сек)
         self.pump_run_time = 90.0  # Время работы насоса (наполнение емкости 1)
         self.pump_stop_time = 2.8  # Время снижения напряжения насоса (сек)
@@ -103,13 +102,13 @@ class LiquidComponentSimulator:
     def setup_ui(self):
         # Основной контейнер
         main_container = ttk.Frame(self.root)
-        main_container.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        main_container.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Левая часть - визуализация и управление
         left_frame = ttk.LabelFrame(main_container, text="Визуализация процесса", padding="10")
         left_frame.grid(row=0, column=0, sticky="wnse", padx=(0, 10))
 
-        # Холст для танков
+        # Холст для емкостей
         self.tank_canvas = tk.Canvas(left_frame, width=550, height=500, bg='white')
         self.tank_canvas.grid(row=0, column=0, sticky="wnse")
 
@@ -217,7 +216,6 @@ class LiquidComponentSimulator:
         decode_frame = ttk.LabelFrame(data_frame, text="Расшифровка", padding="5")
         decode_frame.grid(row=4, column=0, sticky="we", pady=(0, 10))
 
-        # Увеличиваем окно для расшифровки
         self.decode_text = tk.Text(decode_frame, height=15, width=50, font=('Courier', 9))
         self.decode_text.grid(row=0, column=0)
         scrollbar = ttk.Scrollbar(decode_frame, orient="vertical", command=self.decode_text.yview)
@@ -256,11 +254,10 @@ class LiquidComponentSimulator:
         left_frame.columnconfigure(0, weight=1)
 
         right_frame.columnconfigure(0, weight=1)
-        right_frame.columnconfigure(1, weight=2)  # Графики занимают больше места
+        right_frame.columnconfigure(1, weight=2)
         right_frame.rowconfigure(0, weight=1)
 
     def setup_plots(self, parent):
-        # Создание графиков с 4-мя subplots
         self.fig = Figure(figsize=(12, 10), dpi=80)
 
         # График 1: Напряжения (насос и нагреватели)
@@ -303,7 +300,6 @@ class LiquidComponentSimulator:
 
         self.fig.tight_layout()
 
-        # Встраивание графиков в Tkinter
         self.canvas_plot = FigureCanvasTkAgg(self.fig, master=parent)
         self.canvas_plot.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
@@ -316,26 +312,23 @@ class LiquidComponentSimulator:
         start_x = 100
         start_y = 50
 
-        # Цвета для разных температур
         temp_colors = {
-            'cold': '#6495ED',  # Холодный
-            'warm': '#FFA500',  # Теплый
-            'hot': '#FF4500',  # Горячий
-            'very_hot': '#DC143C'  # Очень горячий
+            'cold': '#6495ED',
+            'warm': '#FFA500',
+            'hot': '#FF4500',
+            'very_hot': '#DC143C'
         }
 
-        # Цвета для нагрева
         heat_colors = {
-            0: 'white',  # Выключен
-            1: '#FFA500',  # Нормальный
-            2: '#FF4500'  # Интенсивный
+            0: 'white',
+            1: '#FFA500',
+            2: '#FF4500'
         }
 
         for i in range(3):
             x = start_x + i * (tank_width + spacing)
             y = start_y
 
-            # Определение цвета жидкости по температуре
             temp = self.tank_temperatures[i]
             if temp < 100:
                 liquid_color = temp_colors['cold']
@@ -346,24 +339,24 @@ class LiquidComponentSimulator:
             else:
                 liquid_color = temp_colors['very_hot']
 
-            # Рисование емкости
+            # Емкость
             self.tank_canvas.create_rectangle(x, y, x + tank_width, y + tank_height,
                                               outline='black', width=2)
 
-            # Рисование жидкости
+            # Жидкость
             liquid_height = tank_height * (self.tank_volumes[i] / 100)
             self.tank_canvas.create_rectangle(x, y + tank_height - liquid_height,
                                               x + tank_width, y + tank_height,
                                               fill=liquid_color, outline='')
 
-            # Рисование нагревателя
+            # Нагреватель
             heater_color = heat_colors[self.heating_states[i]]
             heater_y = y + tank_height + 10
             self.tank_canvas.create_rectangle(x + 10, heater_y,
                                               x + tank_width - 10, heater_y + 15,
                                               fill=heater_color, outline='black', width=1)
 
-            # Рисование клапана
+            # Клапан
             valve_color = 'green' if self.valve_states[i] else 'red'
             valve_x = x + tank_width
             valve_y = y + tank_height / 2
@@ -383,7 +376,7 @@ class LiquidComponentSimulator:
             self.tank_canvas.create_text(x + tank_width / 2, y + tank_height + 70,
                                          text=vol_text, font=('Arial', 9), anchor='n')
 
-        # Рисование насоса
+        # Насос
         pump_x = start_x - 50
         pump_y = start_y + tank_height / 2
         pump_color = '#00CED1' if self.pump_state else '#A9A9A9'
@@ -442,7 +435,6 @@ class LiquidComponentSimulator:
                                          arrow="last", fill='red', width=3)
 
     def get_stage_name(self):
-        """Получить название текущего этапа"""
         names = {
             Stage.INIT: "ИНИЦИАЛИЗАЦИЯ",
             Stage.PUMP_START: f"ВКЛЮЧЕНИЕ НАСОСА (0-56В за {self.pump_start_time:.1f}с)",
@@ -488,7 +480,7 @@ class LiquidComponentSimulator:
 
             elif setting_type == 'hold':
                 value = float(self.hold_time_var.get())
-                if 1 <= value <= 7200:  # До 2 часов
+                if 1 <= value <= 7200:
                     self.hold_time = value
                     messagebox.showinfo("Успех", f"Время выдержки установлено: {value} сек")
                 else:
@@ -504,7 +496,7 @@ class LiquidComponentSimulator:
         self.operator_signal = True
         self.operator_btn.config(state='disabled')
         self.status_var.set("Получен сигнал оператора")
-        self.generate_sensor_data()  # Обновить данные сенсора
+        self.generate_sensor_data()
         self.update_gui()
 
     def start_simulation(self):
