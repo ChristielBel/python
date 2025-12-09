@@ -7,6 +7,7 @@ import threading
 from queue import Queue, Empty
 from enum import Enum
 
+
 class Stage(Enum):
     """Этапы работы системы"""
     INIT = 0
@@ -146,15 +147,17 @@ class LiquidComponentSimulator:
 
         self.temp_vars = []
         for i in range(3):
-            ttk.Label(temp_frame, text=f"Емкость {i + 1}:").grid(row=i, column=0, sticky=tk.W, padx=(0, 5))
+            frame = ttk.Frame(temp_frame)
+            frame.grid(row=i, column=0, sticky="we", pady=2)
+            frame.columnconfigure(0, weight=1)
+
+            ttk.Label(frame, text=f"Емкость {i + 1}:").grid(row=0, column=0, sticky=tk.W, padx=(0, 5))
             var = tk.StringVar(value="25.0")
             self.temp_vars.append(var)
-            ttk.Entry(temp_frame, textvariable=var, width=10, state='readonly').grid(row=i, column=1)
-
-            # Кнопка установки температуры
-            btn = ttk.Button(temp_frame, text="Уст.",
-                             command=lambda idx=i: self.set_temperature_dialog(idx))
-            btn.grid(row=i, column=2, padx=(5, 0))
+            ttk.Entry(frame, textvariable=var, width=10, state='readonly').grid(row=0, column=1, padx=5)
+            ttk.Button(frame, text="Уст.",
+                       command=lambda idx=i: self.set_parameter_dialog('temperature', idx),
+                       width=4).grid(row=0, column=2)
 
         # Напряжения
         volt_frame = ttk.LabelFrame(data_frame, text="Напряжения (В)", padding="5")
@@ -171,36 +174,92 @@ class LiquidComponentSimulator:
             self.heater_vars.append(var)
             ttk.Entry(volt_frame, textvariable=var, width=10, state='readonly').grid(row=i + 1, column=1)
 
+        # Регулировка параметров насоса
+        pump_params_frame = ttk.LabelFrame(data_frame, text="Параметры насоса", padding="5")
+        pump_params_frame.grid(row=2, column=0, sticky="we", pady=(0, 10))
+
+        # Время запуска насоса
+        frame_start = ttk.Frame(pump_params_frame)
+        frame_start.grid(row=0, column=0, sticky="we", pady=2)
+        ttk.Label(frame_start, text="Время запуска (с):").grid(row=0, column=0, sticky=tk.W)
+        self.pump_start_var = tk.StringVar(value="3.5")
+        ttk.Entry(frame_start, textvariable=self.pump_start_var, width=10).grid(row=0, column=1, padx=5)
+        ttk.Button(frame_start, text="Уст.",
+                   command=lambda: self.set_parameter_dialog('pump_start', 0),
+                   width=4).grid(row=0, column=2)
+
+        # Время работы насоса
+        frame_run = ttk.Frame(pump_params_frame)
+        frame_run.grid(row=1, column=0, sticky="we", pady=2)
+        ttk.Label(frame_run, text="Время работы (с):").grid(row=0, column=0, sticky=tk.W)
+        self.pump_run_var = tk.StringVar(value="90.0")
+        ttk.Entry(frame_run, textvariable=self.pump_run_var, width=10).grid(row=0, column=1, padx=5)
+        ttk.Button(frame_run, text="Уст.",
+                   command=lambda: self.set_parameter_dialog('pump_run', 0),
+                   width=4).grid(row=0, column=2)
+
+        # Время остановки насоса
+        frame_stop = ttk.Frame(pump_params_frame)
+        frame_stop.grid(row=2, column=0, sticky="we", pady=2)
+        ttk.Label(frame_stop, text="Время остановки (с):").grid(row=0, column=0, sticky=tk.W)
+        self.pump_stop_var = tk.StringVar(value="2.8")
+        ttk.Entry(frame_stop, textvariable=self.pump_stop_var, width=10).grid(row=0, column=1, padx=5)
+        ttk.Button(frame_stop, text="Уст.",
+                   command=lambda: self.set_parameter_dialog('pump_stop', 0),
+                   width=4).grid(row=0, column=2)
+
         # Регулировка времени
         time_frame = ttk.LabelFrame(data_frame, text="Регулировка времени", padding="5")
-        time_frame.grid(row=2, column=0, sticky="we", pady=(0, 10))
+        time_frame.grid(row=3, column=0, sticky="we", pady=(0, 10))
 
         # Время наполнения емкости 1
-        ttk.Label(time_frame, text="Умножить все времена на:").grid(row=0, column=0, sticky=tk.W)
+        frame_factor = ttk.Frame(time_frame)
+        frame_factor.grid(row=0, column=0, sticky="we", pady=2)
+        ttk.Label(frame_factor, text="Умножить все времена на:").grid(row=0, column=0, sticky=tk.W)
         self.time_factor_var = tk.StringVar(value="1.0")
-        time_entry = ttk.Entry(time_frame, textvariable=self.time_factor_var, width=10)
-        time_entry.grid(row=0, column=1, padx=5)
-        ttk.Button(time_frame, text="Применить", command=self.apply_time_factor).grid(row=0, column=2)
+        ttk.Entry(frame_factor, textvariable=self.time_factor_var, width=10).grid(row=0, column=1, padx=5)
+        ttk.Button(frame_factor, text="Уст.",
+                   command=lambda: self.set_parameter_dialog('time_factor', 0),
+                   width=4).grid(row=0, column=2)
 
         # Время перелива
-        ttk.Label(time_frame, text="Время перелива:").grid(row=1, column=0, sticky=tk.W, pady=(5, 0))
+        frame_fill = ttk.Frame(time_frame)
+        frame_fill.grid(row=1, column=0, sticky="we", pady=2)
+        ttk.Label(frame_fill, text="Время перелива (с):").grid(row=0, column=0, sticky=tk.W)
         self.fill_time_var = tk.StringVar(value="90.0")
-        fill_time_entry = ttk.Entry(time_frame, textvariable=self.fill_time_var, width=10)
-        fill_time_entry.grid(row=1, column=1, padx=5, pady=(5, 0))
-        ttk.Button(time_frame, text="Применить",
-                   command=lambda: self.apply_time_setting('fill')).grid(row=1, column=2, pady=(5, 0))
+        ttk.Entry(frame_fill, textvariable=self.fill_time_var, width=10).grid(row=0, column=1, padx=5)
+        ttk.Button(frame_fill, text="Уст.",
+                   command=lambda: self.set_parameter_dialog('fill_time', 0),
+                   width=4).grid(row=0, column=2)
 
         # Время выдержки
-        ttk.Label(time_frame, text="Время выдержки:").grid(row=2, column=0, sticky=tk.W, pady=(5, 0))
+        frame_hold = ttk.Frame(time_frame)
+        frame_hold.grid(row=2, column=0, sticky="we", pady=2)
+        ttk.Label(frame_hold, text="Время выдержки (с):").grid(row=0, column=0, sticky=tk.W)
         self.hold_time_var = tk.StringVar(value="1800.0")
-        hold_time_entry = ttk.Entry(time_frame, textvariable=self.hold_time_var, width=10)
-        hold_time_entry.grid(row=2, column=1, padx=5, pady=(5, 0))
-        ttk.Button(time_frame, text="Применить",
-                   command=lambda: self.apply_time_setting('hold')).grid(row=2, column=2, pady=(5, 0))
+        ttk.Entry(frame_hold, textvariable=self.hold_time_var, width=10).grid(row=0, column=1, padx=5)
+        ttk.Button(frame_hold, text="Уст.",
+                   command=lambda: self.set_parameter_dialog('hold_time', 0),
+                   width=4).grid(row=0, column=2)
+
+        # Время слива
+        frame_drain = ttk.Frame(time_frame)
+        frame_drain.grid(row=3, column=0, sticky="we", pady=2)
+        ttk.Label(frame_drain, text="Время слива (с):").grid(row=0, column=0, sticky=tk.W)
+        self.drain_time_var = tk.StringVar(value="90.0")
+        ttk.Entry(frame_drain, textvariable=self.drain_time_var, width=10).grid(row=0, column=1, padx=5)
+        ttk.Button(frame_drain, text="Уст.",
+                   command=lambda: self.set_parameter_dialog('drain_time', 0),
+                   width=4).grid(row=0, column=2)
+
+        # Кнопка применения всех параметров
+        ttk.Button(time_frame, text="Применить все параметры",
+                   command=self.apply_all_parameters,
+                   style="Accent.TButton").grid(row=4, column=0, pady=(10, 0), sticky="we")
 
         # Коды
         code_frame = ttk.LabelFrame(data_frame, text="Коды и управляющие слова", padding="5")
-        code_frame.grid(row=3, column=0, sticky="we", pady=(0, 10))
+        code_frame.grid(row=4, column=0, sticky="we", pady=(0, 10))
 
         ttk.Label(code_frame, text="Порт 1h (управление):").grid(row=0, column=0, sticky=tk.W)
         self.control_word_var = tk.StringVar(value="0x00000000")
@@ -214,9 +273,9 @@ class LiquidComponentSimulator:
 
         # Расшифровка кодов
         decode_frame = ttk.LabelFrame(data_frame, text="Расшифровка", padding="5")
-        decode_frame.grid(row=4, column=0, sticky="we", pady=(0, 10))
+        decode_frame.grid(row=5, column=0, sticky="we", pady=(0, 10))
 
-        self.decode_text = tk.Text(decode_frame, height=15, width=50, font=('Courier', 9))
+        self.decode_text = tk.Text(decode_frame, height=10, width=50, font=('Courier', 9))
         self.decode_text.grid(row=0, column=0)
         scrollbar = ttk.Scrollbar(decode_frame, orient="vertical", command=self.decode_text.yview)
         scrollbar.grid(row=0, column=1, sticky="ns")
@@ -224,7 +283,7 @@ class LiquidComponentSimulator:
 
         # Статус
         status_frame = ttk.Frame(data_frame)
-        status_frame.grid(row=5, column=0, sticky="we", pady=(10, 0))
+        status_frame.grid(row=6, column=0, sticky="we", pady=(10, 0))
 
         self.status_var = tk.StringVar(value="Готов к работе")
         ttk.Label(status_frame, textvariable=self.status_var, font=('Arial', 10, 'bold')).pack()
@@ -256,6 +315,10 @@ class LiquidComponentSimulator:
         right_frame.columnconfigure(0, weight=1)
         right_frame.columnconfigure(1, weight=2)
         right_frame.rowconfigure(0, weight=1)
+
+        # Стиль для кнопки
+        style = ttk.Style()
+        style.configure("Accent.TButton", font=('Arial', 9, 'bold'))
 
     def setup_plots(self, parent):
         self.fig = Figure(figsize=(12, 10), dpi=80)
@@ -302,6 +365,168 @@ class LiquidComponentSimulator:
 
         self.canvas_plot = FigureCanvasTkAgg(self.fig, master=parent)
         self.canvas_plot.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+    def set_parameter_dialog(self, param_type, idx=None):
+        """Универсальный диалог для установки параметров"""
+        dialog = tk.Toplevel(self.root)
+        dialog.title(f"Установка параметра")
+        dialog.geometry("350x200")
+        dialog.transient(self.root)
+        dialog.grab_set()
+
+        # Определяем параметры в зависимости от типа
+        if param_type == 'temperature':
+            title = f"Установка температуры для емкости {idx + 1}"
+            current_val = self.tank_temperatures[idx]
+            min_val = 0
+            max_val = 700
+            unit = "°C"
+        elif param_type == 'pump_start':
+            title = "Установка времени запуска насоса"
+            current_val = self.pump_start_time
+            min_val = 0.1
+            max_val = 10.0
+            unit = "сек"
+        elif param_type == 'pump_run':
+            title = "Установка времени работы насоса"
+            current_val = self.pump_run_time
+            min_val = 1.0
+            max_val = 600.0
+            unit = "сек"
+        elif param_type == 'pump_stop':
+            title = "Установка времени остановки насоса"
+            current_val = self.pump_stop_time
+            min_val = 0.1
+            max_val = 10.0
+            unit = "сек"
+        elif param_type == 'time_factor':
+            title = "Установка коэффициента умножения времени"
+            current_val = float(self.time_factor_var.get())
+            min_val = 0.1
+            max_val = 10.0
+            unit = ""
+        elif param_type == 'fill_time':
+            title = "Установка времени перелива"
+            current_val = self.fill_time
+            min_val = 1.0
+            max_val = 600.0
+            unit = "сек"
+        elif param_type == 'hold_time':
+            title = "Установка времени выдержки"
+            current_val = self.hold_time
+            min_val = 1.0
+            max_val = 7200.0
+            unit = "сек"
+        elif param_type == 'drain_time':
+            title = "Установка времени слива"
+            current_val = self.drain_time
+            min_val = 1.0
+            max_val = 600.0
+            unit = "сек"
+        else:
+            title = "Установка параметра"
+            current_val = 0
+            min_val = 0
+            max_val = 100
+            unit = ""
+
+        ttk.Label(dialog, text=title, font=('Arial', 10, 'bold')).pack(pady=(10, 5))
+
+        # Фрейм для ввода
+        input_frame = ttk.Frame(dialog)
+        input_frame.pack(pady=10)
+
+        ttk.Label(input_frame, text="Значение:").grid(row=0, column=0, padx=5)
+        value_var = tk.StringVar(value=str(current_val))
+        entry = ttk.Entry(input_frame, textvariable=value_var, width=15)
+        entry.grid(row=0, column=1, padx=5)
+        ttk.Label(input_frame, text=unit).grid(row=0, column=2, padx=5)
+
+        # Информация о допустимом диапазоне
+        ttk.Label(dialog, text=f"Допустимый диапазон: от {min_val} до {max_val} {unit}",
+                  font=('Arial', 8)).pack(pady=(0, 10))
+
+        def apply_parameter():
+            try:
+                value = float(value_var.get())
+                if min_val <= value <= max_val:
+                    if param_type == 'temperature':
+                        self.tank_temperatures[idx] = value
+                    elif param_type == 'pump_start':
+                        self.pump_start_time = value
+                        self.pump_start_var.set(str(value))
+                    elif param_type == 'pump_run':
+                        self.pump_run_time = value
+                        self.pump_run_var.set(str(value))
+                    elif param_type == 'pump_stop':
+                        self.pump_stop_time = value
+                        self.pump_stop_var.set(str(value))
+                    elif param_type == 'time_factor':
+                        self.time_factor_var.set(str(value))
+                    elif param_type == 'fill_time':
+                        self.fill_time = value
+                        self.fill_time_var.set(str(value))
+                    elif param_type == 'hold_time':
+                        self.hold_time = value
+                        self.hold_time_var.set(str(value))
+                    elif param_type == 'drain_time':
+                        self.drain_time = value
+                        self.drain_time_var.set(str(value))
+
+                    self.update_gui()
+                    dialog.destroy()
+                    messagebox.showinfo("Успех", f"Параметр установлен: {value} {unit}")
+                else:
+                    messagebox.showerror("Ошибка", f"Значение должно быть в диапазоне от {min_val} до {max_val} {unit}")
+            except ValueError:
+                messagebox.showerror("Ошибка", "Введите числовое значение")
+
+        # Кнопки
+        btn_frame = ttk.Frame(dialog)
+        btn_frame.pack(pady=10)
+
+        ttk.Button(btn_frame, text="Применить", command=apply_parameter, width=15).pack(side="left", padx=5)
+        ttk.Button(btn_frame, text="Отмена", command=dialog.destroy, width=15).pack(side="left", padx=5)
+
+        entry.focus_set()
+        entry.select_range(0, tk.END)
+
+    def apply_all_parameters(self):
+        """Применить все измененные параметры"""
+        try:
+            # Применяем параметры насоса
+            self.pump_start_time = float(self.pump_start_var.get())
+            self.pump_run_time = float(self.pump_run_var.get())
+            self.pump_stop_time = float(self.pump_stop_var.get())
+
+            # Применяем временные параметры
+            self.fill_time = float(self.fill_time_var.get())
+            self.hold_time = float(self.hold_time_var.get())
+            self.drain_time = float(self.drain_time_var.get())
+
+            # Применяем коэффициент умножения
+            factor = float(self.time_factor_var.get())
+            if 0.1 <= factor <= 10.0:
+                self.pump_start_time *= factor
+                self.pump_run_time *= factor
+                self.pump_stop_time *= factor
+                self.fill_time *= factor
+                self.hold_time *= factor
+                self.drain_time *= factor
+
+                # Обновляем отображение
+                self.pump_start_var.set(f"{self.pump_start_time:.1f}")
+                self.pump_run_var.set(f"{self.pump_run_time:.1f}")
+                self.pump_stop_var.set(f"{self.pump_stop_time:.1f}")
+                self.fill_time_var.set(f"{self.fill_time:.1f}")
+                self.hold_time_var.set(f"{self.hold_time:.1f}")
+                self.drain_time_var.set(f"{self.drain_time:.1f}")
+
+            self.update_gui()
+            messagebox.showinfo("Успех", "Все параметры применены успешно!")
+
+        except ValueError as e:
+            messagebox.showerror("Ошибка", f"Ошибка ввода данных: {str(e)}")
 
     def draw_tanks(self):
         self.tank_canvas.delete("all")
@@ -452,45 +677,6 @@ class LiquidComponentSimulator:
         }
         return names.get(self.current_stage, "НЕИЗВЕСТНЫЙ ЭТАП")
 
-    def apply_time_factor(self):
-        """Применить коэффициент ко всем временным параметрам"""
-        try:
-            factor = float(self.time_factor_var.get())
-            if 0.1 <= factor <= 10.0:
-                self.pump_run_time = 90.0 * factor
-                self.fill_time = 90.0 * factor
-                self.hold_time = 1800.0 * factor
-                self.drain_time = 90.0 * factor
-                messagebox.showinfo("Успех", f"Временные параметры умножены на {factor}")
-            else:
-                messagebox.showerror("Ошибка", "Коэффициент должен быть от 0.1 до 10")
-        except ValueError:
-            messagebox.showerror("Ошибка", "Введите числовое значение")
-
-    def apply_time_setting(self, setting_type):
-        """Применить настройки времени"""
-        try:
-            if setting_type == 'fill':
-                value = float(self.fill_time_var.get())
-                if 1 <= value <= 600:
-                    self.fill_time = value
-                    messagebox.showinfo("Успех", f"Время перелива установлено: {value} сек")
-                else:
-                    messagebox.showerror("Ошибка", "Введите значение от 1 до 600 секунд")
-
-            elif setting_type == 'hold':
-                value = float(self.hold_time_var.get())
-                if 1 <= value <= 7200:
-                    self.hold_time = value
-                    messagebox.showinfo("Успех", f"Время выдержки установлено: {value} сек")
-                else:
-                    messagebox.showerror("Ошибка", "Введите значение от 1 до 7200 секунд")
-
-            self.update_gui()
-
-        except ValueError:
-            messagebox.showerror("Ошибка", "Введите числовое значение")
-
     def send_operator_signal(self):
         """Отправить сигнал оператора"""
         if self.current_stage == Stage.WAIT_OPERATOR_TANK2:
@@ -593,14 +779,22 @@ class LiquidComponentSimulator:
         self.heater2_data = []
         self.heater3_data = []
 
-        # Восстановление значений времени по умолчанию
-        self.time_factor_var.set("1.0")
-        self.fill_time_var.set("90.0")
-        self.hold_time_var.set("1800.0")
+        # Восстановление значений по умолчанию
+        self.pump_start_time = 3.5
         self.pump_run_time = 90.0
+        self.pump_stop_time = 2.8
         self.fill_time = 90.0
         self.hold_time = 1800.0
         self.drain_time = 90.0
+
+        # Обновление интерфейса
+        self.pump_start_var.set("3.5")
+        self.pump_run_var.set("90.0")
+        self.pump_stop_var.set("2.8")
+        self.time_factor_var.set("1.0")
+        self.fill_time_var.set("90.0")
+        self.hold_time_var.set("1800.0")
+        self.drain_time_var.set("90.0")
 
         # Обновление управляющих слов
         self.generate_control_word()
@@ -672,7 +866,7 @@ class LiquidComponentSimulator:
                 self.stage_progress = 0
 
         elif self.current_stage == Stage.PUMP_RUN:
-            # Ожидание 90 секунд работы насоса (наполнение емкости 1)
+            # Ожидание работы насоса (наполнение емкости 1)
             self.stage_progress += time_step
             if self.stage_progress < self.pump_run_time:
                 # Наполнение первой емкости
@@ -785,7 +979,7 @@ class LiquidComponentSimulator:
                     self.stage_progress = 0
                     self.valve_states[1] = True
                     self.operator_signal = False
-                    self.status_var.set("Начинается перелив из емкости 2 в емкость 3")
+                    self.status_var.set("Начинается перелив из емкости 2 в емкости 3")
                 else:
                     # Температура не в допустимом диапазоне
                     self.status_var.set(f"Температура емкости 2: {temp:.1f}°C. Нужно 360±5°C")
@@ -909,7 +1103,7 @@ class LiquidComponentSimulator:
                     control_word |= voltage_code
                     break
 
-        # Бит 8: Питание ЦАП (всегда включено при работе)
+        # Бит 8: Питание ЦАП (включено при работе)
         if self.pump_state or any(h > 0 for h in self.heating_states):
             control_word |= (1 << 8)
 
@@ -1020,39 +1214,6 @@ class LiquidComponentSimulator:
 
         self.decode_text.delete(1.0, tk.END)
         self.decode_text.insert(1.0, "\n".join(lines))
-
-    def set_temperature_dialog(self, tank_idx):
-        """Диалог установки температуры"""
-        dialog = tk.Toplevel(self.root)
-        dialog.title(f"Установка температуры для емкости {tank_idx + 1}")
-        dialog.geometry("300x150")
-        dialog.transient(self.root)
-        dialog.grab_set()
-
-        ttk.Label(dialog, text=f"Температура емкости {tank_idx + 1}:").pack(pady=10)
-
-        temp_var = tk.StringVar(value=str(self.tank_temperatures[tank_idx]))
-        entry = ttk.Entry(dialog, textvariable=temp_var, width=20)
-        entry.pack(pady=5)
-
-        def apply_temp():
-            try:
-                temp = float(temp_var.get())
-                if 0 <= temp <= 600:
-                    self.tank_temperatures[tank_idx] = temp
-                    self.generate_control_word()
-                    self.generate_sensor_data()
-                    self.update_gui()
-                    dialog.destroy()
-                else:
-                    messagebox.showerror("Ошибка", "Температура должна быть от 0 до 600 °C")
-            except ValueError:
-                messagebox.showerror("Ошибка", "Введите числовое значение")
-
-        ttk.Button(dialog, text="Применить", command=apply_temp).pack(pady=10)
-        ttk.Button(dialog, text="Отмена", command=dialog.destroy).pack()
-
-        entry.focus_set()
 
     def update_gui(self):
         """Обновление всех элементов GUI"""
