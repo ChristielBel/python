@@ -6,6 +6,7 @@ import time
 import threading
 from queue import Queue, Empty
 from enum import Enum
+import random
 
 
 class Stage(Enum):
@@ -40,13 +41,15 @@ class LiquidComponentSimulator:
         self.waiting_for_operator = False
         self.operator_signal = False
         self.hold_time_counter = 0
+        self.cycle_count = 0  # Счетчик циклов
 
         # Параметры из задания
-        self.adc_bits = 10
-        self.dac_bits = 8
-        self.adc_range = (0, 30)
-        self.dac_range = (0, 90)
-        self.max_dac_time = 20  # мс
+        self.adc_bits = 10  # 10-битный АЦП
+        self.dac_bits = 8  # 8-битный ЦАП
+        self.temp_sensor_range = (0, 600)  # °C
+        self.temp_output_range = (0, 24)  # В
+        self.pump_voltage_range = (0, 56)  # В
+        self.intensive_heating_threshold = 20  # °C
 
         # Регулируемые параметры
         self.pump_start_time = 3.5  # Время набора напряжения насоса (сек)
@@ -65,13 +68,8 @@ class LiquidComponentSimulator:
         self.pump_voltage = 0  # В
         self.pump_state = False
 
-        # Коды из таблиц
-        self.temp_codes = {
-            490: 669, 470: 642, 360: 492, 340: 464, 564: 770, 544: 743
-        }
-        self.voltage_codes = {
-            86: 245, 36: 102, 56: 159
-        }
+        # Данные с датчиков температуры (6 датчиков: по 2 на каждую емкость)
+        self.temp_sensors = [[25.0, 25.0], [25.0, 25.0], [25.0, 25.0]]
 
         # Данные для графиков
         self.time_data = []
@@ -159,20 +157,23 @@ class LiquidComponentSimulator:
                        command=lambda idx=i: self.set_parameter_dialog('temperature', idx),
                        width=4).grid(row=0, column=2)
 
-        # Напряжения
-        volt_frame = ttk.LabelFrame(data_frame, text="Напряжения (В)", padding="5")
-        volt_frame.grid(row=1, column=0, sticky="we", pady=(0, 10))
+        # Напряжения и состояния
+        state_frame = ttk.LabelFrame(data_frame, text="Напряжения и состояния", padding="5")
+        state_frame.grid(row=1, column=0, sticky="we", pady=(0, 10))
 
+        # Напряжение насоса
         self.pump_volt_var = tk.StringVar(value="0.0")
-        ttk.Label(volt_frame, text="Насос:").grid(row=0, column=0, sticky=tk.W)
-        ttk.Entry(volt_frame, textvariable=self.pump_volt_var, width=10, state='readonly').grid(row=0, column=1)
+        ttk.Label(state_frame, text="Насос (В):").grid(row=0, column=0, sticky=tk.W)
+        ttk.Entry(state_frame, textvariable=self.pump_volt_var, width=10, state='readonly').grid(row=0, column=1)
 
-        self.heater_vars = []
+        # Состояния нагревателей
+        self.heater_state_vars = []
+        heater_names = ["Нагрев 1", "Нагрев 2", "Нагрев 3"]
         for i in range(3):
-            ttk.Label(volt_frame, text=f"Нагрев {i + 1}:").grid(row=i + 1, column=0, sticky=tk.W)
-            var = tk.StringVar(value="0.0")
-            self.heater_vars.append(var)
-            ttk.Entry(volt_frame, textvariable=var, width=10, state='readonly').grid(row=i + 1, column=1)
+            ttk.Label(state_frame, text=f"{heater_names[i]}:").grid(row=i + 1, column=0, sticky=tk.W)
+            var = tk.StringVar(value="Выкл")
+            self.heater_state_vars.append(var)
+            ttk.Entry(state_frame, textvariable=var, width=10, state='readonly').grid(row=i + 1, column=1)
 
         # Регулировка параметров насоса
         pump_params_frame = ttk.LabelFrame(data_frame, text="Параметры насоса", padding="5")
@@ -294,6 +295,9 @@ class LiquidComponentSimulator:
         self.time_var = tk.StringVar(value="Время: 0 с")
         ttk.Label(status_frame, textvariable=self.time_var).pack()
 
+        self.cycle_var = tk.StringVar(value="Цикл: 0")
+        ttk.Label(status_frame, textvariable=self.cycle_var).pack()
+
         self.hold_time_var_display = tk.StringVar(value="Выдержка: 0/1800 с")
         ttk.Label(status_frame, textvariable=self.hold_time_var_display).pack()
 
@@ -323,17 +327,13 @@ class LiquidComponentSimulator:
     def setup_plots(self, parent):
         self.fig = Figure(figsize=(12, 10), dpi=80)
 
-        # График 1: Напряжения (насос и нагреватели)
+        # График 1: Напряжение насоса
         self.ax1 = self.fig.add_subplot(411)
-        self.ax1.set_title('Аналоговые значения напряжений')
+        self.ax1.set_title('Напряжение насоса')
         self.ax1.set_ylabel('Напряжение, В')
         self.ax1.grid(True, alpha=0.3)
-        self.ax1.set_ylim(0, 100)
-
+        self.ax1.set_ylim(0, 60)
         self.pump_line, = self.ax1.plot([], [], 'b-', label='Насос', linewidth=2)
-        self.heater1_line, = self.ax1.plot([], [], 'r-', label='Нагрев 1', alpha=0.7)
-        self.heater2_line, = self.ax1.plot([], [], 'g-', label='Нагрев 2', alpha=0.7)
-        self.heater3_line, = self.ax1.plot([], [], 'm-', label='Нагрев 3', alpha=0.7)
         self.ax1.legend(loc='upper right', fontsize='small')
 
         # График 2: Температура емкости 1
@@ -767,7 +767,11 @@ class LiquidComponentSimulator:
         self.waiting_for_operator = False
         self.operator_signal = False
         self.hold_time_counter = 0
+        self.cycle_count = 0
         self.operator_btn.config(state='disabled')
+
+        # Сброс данных датчиков
+        self.temp_sensors = [[25.0, 25.0], [25.0, 25.0], [25.0, 25.0]]
 
         # Сброс данных графиков
         self.time_data = []
@@ -823,6 +827,9 @@ class LiquidComponentSimulator:
                 # Обновление температуры
                 self.update_temperatures(effective_time_step)
 
+                # Обновление датчиков температуры
+                self.update_temperature_sensors()
+
                 # Обновление данных для графиков
                 self.time_data.append(self.simulation_time)
                 self.pump_data.append(self.pump_voltage)
@@ -831,13 +838,9 @@ class LiquidComponentSimulator:
                 self.temp3_data.append(self.tank_temperatures[2])
 
                 # Данные для нагревателей
-                h1 = 86 if self.heating_states[0] == 2 else (36 if self.heating_states[0] == 1 else 0)
-                h2 = 86 if self.heating_states[1] == 2 else (36 if self.heating_states[1] == 1 else 0)
-                h3 = 86 if self.heating_states[2] == 2 else (36 if self.heating_states[2] == 1 else 0)
-
-                self.heater1_data.append(h1)
-                self.heater2_data.append(h2)
-                self.heater3_data.append(h3)
+                self.heater1_data.append(self.heating_states[0] * 20)
+                self.heater2_data.append(self.heating_states[1] * 20)
+                self.heater3_data.append(self.heating_states[2] * 20)
 
                 # Обновление времени симуляции с учетом скорости
                 self.simulation_time += effective_time_step
@@ -850,6 +853,18 @@ class LiquidComponentSimulator:
                 self.update_queue.put(True)
 
             time.sleep(0.01)
+
+    def update_temperature_sensors(self):
+        """Обновление показаний датчиков температуры"""
+        for i in range(3):
+            # Основная температура емкости
+            base_temp = self.tank_temperatures[i]
+
+            # Добавляем небольшое случайное отклонение для каждого датчика
+            for j in range(2):
+                # Отклонение ±0.5°C для имитации реальных датчиков
+                deviation = random.uniform(-0.5, 0.5)
+                self.temp_sensors[i][j] = max(0, min(600, base_temp + deviation))
 
     def update_stage(self, time_step):
         """Обновление текущего этапа работы"""
@@ -893,12 +908,10 @@ class LiquidComponentSimulator:
             # Нагрев первой емкости до 490°C
             temp = self.tank_temperatures[0]
 
-            if temp < 490:
-                if temp < 470:
-                    self.heating_states[0] = 2  # Интенсивный нагрев
-                else:
-                    self.heating_states[0] = 1  # Нормальный нагрев
-            else:
+            # Обновляем логику нагрева для первой емкости
+            self.update_heating_for_tank(0)
+
+            if temp >= 490:
                 self.heating_states[0] = 0
                 self.current_stage = Stage.FILL_TANK1_TO_TANK2
                 self.stage_progress = 0
@@ -922,34 +935,34 @@ class LiquidComponentSimulator:
                 self.valve_states[0] = False
                 self.current_stage = Stage.COOL_TANK2
                 self.stage_progress = 0
+                # Выключаем нагрев первой емкости, так как она теперь пуста
+                self.heating_states[0] = 0
 
         elif self.current_stage == Stage.COOL_TANK2:
             # Охлаждение второй емкости до 360°C
             temp = self.tank_temperatures[1]
 
+            # Обновляем логику нагрева для второй емкости
+            self.update_heating_for_tank(1)
+
+            # Для охлаждения выключаем нагрев и даем остыть
             if temp > 360:
-                # Активное охлаждение - выключаем нагрев и быстро охлаждаем
+                # Выключаем нагрев для охлаждения
                 self.heating_states[1] = 0
-                cooling_rate = 15 * time_step  # 15°C/сек для быстрого охлаждения
+                # Естественное охлаждение
+                cooling_rate = 1.0 * time_step
                 self.tank_temperatures[1] = max(360, temp - cooling_rate)
             else:
                 # Достигли 360°C
                 self.current_stage = Stage.MAINTAIN_TANK2
                 self.stage_progress = 0
-                self.heating_states[1] = 0  # Гарантируем выключение нагрева
 
         elif self.current_stage == Stage.MAINTAIN_TANK2:
             # Поддержание температуры 360°C во второй емкости
-            temp = self.tank_temperatures[1]
-
-            # Гистерезис: включаем нагрев при 355°C, выключаем при 365°C
-            if temp < 355:
-                self.heating_states[1] = 1  # Включить нормальный нагрев
-            elif temp > 365:
-                self.heating_states[1] = 0  # Выключить нагрев
-            # Если температура между 355 и 365, не меняем состояние нагрева
+            self.update_heating_for_tank(1)
 
             # Если температура в допустимом диапазоне и пришел сигнал оператора
+            temp = self.tank_temperatures[1]
             if self.operator_signal:
                 if 355 <= temp <= 365:  # Допуск ±5°C
                     self.current_stage = Stage.FILL_TANK2_TO_TANK3
@@ -957,22 +970,18 @@ class LiquidComponentSimulator:
                     self.valve_states[1] = True
                     self.operator_signal = False
                     self.status_var.set("Начинается перелив из емкости 2 в емкость 3")
+                else:
+                    self.operator_signal = False
             else:
                 # Если нет сигнала оператора, переходим в режим ожидания
                 self.current_stage = Stage.WAIT_OPERATOR_TANK2
 
         elif self.current_stage == Stage.WAIT_OPERATOR_TANK2:
-            # Ожидание сигнала оператора - просто ждем
-            # Температура поддерживается так же, как в MAINTAIN_TANK2
-            temp = self.tank_temperatures[1]
-
-            # Гистерезис: включаем нагрев при 355°C, выключаем при 365°C
-            if temp < 355:
-                self.heating_states[1] = 1  # Включить нормальный нагрев
-            elif temp > 365:
-                self.heating_states[1] = 0  # Выключить нагрев
+            # Ожидание сигнала оператора
+            self.update_heating_for_tank(1)
 
             # Проверяем сигнал оператора
+            temp = self.tank_temperatures[1]
             if self.operator_signal:
                 if 355 <= temp <= 365:  # Допуск ±5°C
                     self.current_stage = Stage.FILL_TANK2_TO_TANK3
@@ -983,7 +992,7 @@ class LiquidComponentSimulator:
                 else:
                     # Температура не в допустимом диапазоне
                     self.status_var.set(f"Температура емкости 2: {temp:.1f}°C. Нужно 360±5°C")
-                    self.operator_signal = False  # Сбрасываем сигнал
+                    self.operator_signal = False
 
         elif self.current_stage == Stage.FILL_TANK2_TO_TANK3:
             # Перелив из 2 в 3 емкость
@@ -1004,17 +1013,17 @@ class LiquidComponentSimulator:
                 self.current_stage = Stage.HEAT_TANK3
                 self.stage_progress = 0
                 self.status_var.set("Начинается нагрев емкости 3 до 564°C")
+                # Выключаем нагрев второй емкости, так как она теперь пуста
+                self.heating_states[1] = 0
 
         elif self.current_stage == Stage.HEAT_TANK3:
             # Нагрев третьей емкости до 564°C
             temp = self.tank_temperatures[2]
 
-            if temp < 564:
-                if temp < 544:
-                    self.heating_states[2] = 2  # Интенсивный нагрев
-                else:
-                    self.heating_states[2] = 1  # Нормальный нагрев
-            else:
+            # Обновляем логику нагрева для третьей емкости
+            self.update_heating_for_tank(2)
+
+            if temp >= 564:
                 self.heating_states[2] = 0
                 self.current_stage = Stage.MAINTAIN_TANK3
                 self.stage_progress = 0
@@ -1023,22 +1032,12 @@ class LiquidComponentSimulator:
 
         elif self.current_stage == Stage.MAINTAIN_TANK3:
             # Выдержка при 564°C
-            temp = self.tank_temperatures[2]
-
-            # Поддержание температуры с гистерезисом
-            if temp < 544:
-                self.heating_states[2] = 2  # Интенсивный нагрев
-            elif temp < 564:
-                self.heating_states[2] = 1  # Нормальный нагрев
-            else:
-                self.heating_states[2] = 0  # Выключить нагрев
+            self.update_heating_for_tank(2)
 
             # Увеличиваем счетчик выдержки только когда температура близка к целевой
+            temp = self.tank_temperatures[2]
             if 559 <= temp <= 569:  # Допуск ±5°C
                 self.hold_time_counter += time_step
-            else:
-                # Если температура вышла за пределы допуска, не считаем это время выдержкой
-                pass
 
             if self.hold_time_counter >= self.hold_time:
                 self.current_stage = Stage.DRAIN_TANK3
@@ -1055,9 +1054,42 @@ class LiquidComponentSimulator:
                     self.tank_volumes[2] = max(0, self.tank_volumes[2] - drain)
             else:
                 self.valve_states[2] = False
-                self.current_stage = Stage.INIT
-                self.running = False
-                self.status_var.set(f"Цикл завершен за {self.simulation_time:.1f} сек")
+                self.cycle_count += 1
+                self.status_var.set(f"Цикл {self.cycle_count} завершен. Начинается новый цикл.")
+                # Начинаем новый цикл
+                self.current_stage = Stage.PUMP_START
+                self.stage_progress = 0
+                # Сбрасываем температуры для нового цикла
+                self.tank_temperatures = [25, 25, 25]
+                # Сбрасываем все нагреватели
+                self.heating_states = [0, 0, 0]
+
+    def update_heating_for_tank(self, tank_idx):
+        """Обновление логики нагрева для конкретной емкости"""
+        if self.tank_volumes[tank_idx] == 0:
+            # Если емкость пуста, выключаем нагрев
+            self.heating_states[tank_idx] = 0
+            return
+
+        target_temp = self.target_temperatures[tank_idx]
+        current_temp = self.tank_temperatures[tank_idx]
+        diff = target_temp - current_temp
+
+        # Емкость 2 имеет только нормальный режим или выкл
+        if tank_idx == 1:  # Емкость 2
+            if diff > 1:  # Если температура ниже целевой более чем на 1°C
+                self.heating_states[tank_idx] = 1  # Нормальный нагрев
+            else:
+                self.heating_states[tank_idx] = 0  # Выкл
+
+        # Емкости 1 и 3 имеют три режима
+        else:  # Емкости 1 и 3
+            if diff > self.intensive_heating_threshold:
+                self.heating_states[tank_idx] = 2  # Интенсивный нагрев
+            elif diff > 1:
+                self.heating_states[tank_idx] = 1  # Нормальный нагрев
+            else:
+                self.heating_states[tank_idx] = 0  # Выкл
 
     def update_temperatures(self, time_step):
         """Обновление температур в емкостях с учетом объемов жидкости"""
@@ -1068,71 +1100,65 @@ class LiquidComponentSimulator:
                 continue
 
             if self.heating_states[i] == 1:  # Нормальный нагрев
-                # Нагрев зависит от объема жидкости
-                heat_rate = 5 * time_step
+                # Скорость нагрева зависит от объема жидкости
+                heat_rate = 3 * time_step * (self.tank_volumes[i] / 100)
                 self.tank_temperatures[i] += heat_rate
             elif self.heating_states[i] == 2:  # Интенсивный нагрев
-                heat_rate = 10 * time_step
+                heat_rate = 6 * time_step * (self.tank_volumes[i] / 100)
                 self.tank_temperatures[i] += heat_rate
             elif self.heating_states[i] == 0:  # Охлаждение
                 # Охлаждение зависит от разницы с комнатной температурой
                 if self.tank_temperatures[i] > 25:
-                    cooling_factor = 0.05 * (self.tank_temperatures[i] - 25) / 500
-                    cooling_rate = 2 * time_step * (1 + cooling_factor)
+                    cooling_factor = 0.1 * (self.tank_temperatures[i] - 25) / 600
+                    cooling_rate = 1 * time_step * (1 + cooling_factor)
                     self.tank_temperatures[i] = max(25, self.tank_temperatures[i] - cooling_rate)
 
-            # Ограничиваем температуру разумными пределами
-            self.tank_temperatures[i] = max(25, min(700, self.tank_temperatures[i]))
+            # Ограничиваем температуру диапазоном датчиков
+            self.tank_temperatures[i] = max(0, min(600, self.tank_temperatures[i]))
 
     def generate_control_word(self):
-        """Генерация управляющего слова для порта 1h"""
+        """Генерация управляющего слова согласно Таблице 4"""
         control_word = 0
 
-        # Бит 0-7: Код напряжения для ЦАП
-        if self.pump_state:
-            voltage_code = self.calculate_dac_code(self.pump_voltage)
-            control_word |= voltage_code
-        else:
-            # Если не насос, то возможно нагреватель
-            for i in range(3):
-                if self.heating_states[i] > 0:
-                    if self.heating_states[i] == 1:
-                        voltage_code = self.calculate_dac_code(36)
-                    else:  # intensive
-                        voltage_code = self.calculate_dac_code(86)
-                    control_word |= voltage_code
-                    break
+        # Бит 0-7: Код напряжения для ЦАП (насос)
+        dac_code = self.calculate_dac_code(self.pump_voltage)
+        control_word |= (dac_code & 0xFF)
 
-        # Бит 8: Питание ЦАП (включено при работе)
-        if self.pump_state or any(h > 0 for h in self.heating_states):
+        # Бит 8: Сигнал разрешения работы ЦАП (включен при работе насоса)
+        if self.pump_state:
             control_word |= (1 << 8)
 
-        # Бит 9-10: Код устройства для ЦАП
-        # 00 - насос, 01 - нагрев1, 10 - нагрев2, 11 - нагрев3
-        if self.pump_state:
-            control_word |= (0 << 9)  # Насос
-        else:
-            for i in range(3):
-                if self.heating_states[i] > 0:
-                    control_word |= ((i + 1) << 9)  # Нагреватель i+1
-                    break
+        # Бит 9-10: Код работы нагревательного элемента №0 (емкость 1)
+        control_word |= (self.heating_states[0] << 9)
 
-        # Бит 11: Питание демультиплексора
-        control_word |= (1 << 11)
+        # Бит 11-12: Код работы нагревательного элемента №1 (емкость 2)
+        # Для емкости 2 только 0 или 1
+        heater_state_1 = 1 if self.heating_states[1] > 0 else 0
+        control_word |= (heater_state_1 << 11)
 
-        # Бит 24-26: Клапаны
-        for i in range(3):
-            if self.valve_states[i]:
-                control_word |= (1 << (24 + i))
+        # Бит 13-14: Код работы нагревательного элемента №2 (емкость 3)
+        control_word |= (self.heating_states[2] << 13)
 
-        # Бит 27: Питание АЦП
+        # Бит 24: Клапан 1 (емкость 1)
+        if self.valve_states[0]:
+            control_word |= (1 << 24)
+
+        # Бит 25: Клапан 2 (емкость 2)
+        if self.valve_states[1]:
+            control_word |= (1 << 25)
+
+        # Бит 26: Клапан 3 (емкость 3)
+        if self.valve_states[2]:
+            control_word |= (1 << 26)
+
+        # Бит 27: Питание АЦП (всегда включено)
         control_word |= (1 << 27)
 
-        # Бит 28: Питание мультиплексора
+        # Бит 28: Питание мультиплексора (всегда включено)
         control_word |= (1 << 28)
 
-        # Бит 29-31: Код датчика (циклический опрос)
-        sensor_idx = int(self.simulation_time * 2) % 6  # 6 датчиков
+        # Бит 29-31: Код датчика (0-5 для 6 датчиков)
+        sensor_idx = int(self.simulation_time) % 6
         control_word |= (sensor_idx << 29)
 
         self.control_word = control_word
@@ -1141,45 +1167,59 @@ class LiquidComponentSimulator:
         # Расшифровка
         self.decode_control_word(control_word)
 
+        return control_word
+
     def generate_sensor_data(self):
-        """Генерация данных с датчиков для порта 2h"""
+        """Генерация данных с датчиков температуры для порта 2h"""
         sensor_data = 0
 
-        # Циклический опрос датчиков
-        sensor_idx = int(self.simulation_time * 2) % 6
-        tank_idx = sensor_idx // 2
-        temp = self.tank_temperatures[tank_idx]
+        # Определяем текущий опрашиваемый датчик из управляющего слова
+        sensor_idx = (self.control_word >> 29) & 0x7
+        tank_idx = sensor_idx // 2  # 0, 1, 2
+        sensor_num = sensor_idx % 2  # 0 или 1
 
-        # Расчет кода АЦП
-        adc_code = self.calculate_adc_code(temp)
-        sensor_data |= adc_code
+        # Берем значение с соответствующего датчика
+        if tank_idx < 3 and sensor_num < 2:
+            temperature = self.temp_sensors[tank_idx][sensor_num]
+        else:
+            temperature = 25.0  # Значение по умолчанию
 
-        # Бит 14: Сигнал от оператора
+        # Преобразуем температуру в код АЦП
+        adc_code = self.calculate_adc_code(temperature)
+
+        # Записываем 10-битный код АЦП в биты 0-9
+        sensor_data |= (adc_code & 0x3FF)
+
+        # Бит 14: Сигнал оператора
         if self.operator_signal:
             sensor_data |= (1 << 14)
 
-        # Бит 15: Сигнал готовности АЦП
+        # Бит 15: Готовность АЦП (всегда 1, когда есть данные)
         sensor_data |= (1 << 15)
 
         self.sensor_data = sensor_data
         self.sensor_data_var.set(f"0x{sensor_data:04X}")
 
-    @staticmethod
-    def calculate_adc_code(temperature):
-        """Расчет кода АЦП для температуры"""
-        # U = 0.04 * T (из задания)
-        voltage = 0.04 * temperature
+        return sensor_data
 
-        # D = round((U - Umin) / (Umax - Umin) * 1024)
-        adc_code = int(round((voltage - 0) / (30 - 0) * 1024))
-        return min(adc_code, 1023)
+    def calculate_adc_code(self, temperature):
+        """Расчет кода АЦП для датчика температуры (0-600°C -> 0-24В -> 0-1023)"""
+        # Преобразование температуры в напряжение: 0-600°C -> 0-24В
+        voltage = (temperature / 600.0) * 24.0
 
-    @staticmethod
-    def calculate_dac_code(voltage):
-        """Расчет кода ЦАП для напряжения"""
-        # D = round(U / 90 * 256)
-        dac_code = int(round(voltage / 90 * 256))
-        return min(dac_code, 255)
+        # Преобразование напряжения в 10-битный код АЦП: 0-24В -> 0-1023
+        adc_code = int((voltage / 24.0) * 1023)
+
+        # Ограничение диапазона
+        return max(0, min(1023, adc_code))
+
+    def calculate_dac_code(self, voltage):
+        """Расчет кода ЦАП для напряжения насоса (0-56В -> 0-255)"""
+        # Преобразование напряжения в 8-битный код ЦАП: 0-56В -> 0-255
+        dac_code = int((voltage / 56.0) * 255)
+
+        # Ограничение диапазона
+        return max(0, min(255, dac_code))
 
     def decode_control_word(self, word):
         """Расшифровка управляющего слова"""
@@ -1187,30 +1227,36 @@ class LiquidComponentSimulator:
 
         # ЦАП
         dac_code = word & 0xFF
-        voltage = (dac_code / 255) * 90
-        lines.append(f"[0–7]  Код ЦАП: {dac_code} → {voltage:.1f} В")
+        voltage = (dac_code / 255.0) * 56.0
+        lines.append(f"[0-7]   Код ЦАП: {dac_code} → {voltage:.1f} В")
 
-        dac_power = (word >> 8) & 1
-        lines.append(f"[8]    Питание ЦАП: {'ВКЛ' if dac_power else 'ВЫКЛ'}")
+        dac_enable = (word >> 8) & 1
+        lines.append(f"[8]     Разрешение ЦАП: {'ВКЛ' if dac_enable else 'ВЫКЛ'}")
 
-        device_code = (word >> 9) & 3
-        devices = ['Насос', 'Нагрев 1', 'Нагрев 2', 'Нагрев 3']
-        lines.append(f"[9–10] Устройство: {devices[device_code]}")
+        # Нагреватели
+        heater0_code = (word >> 9) & 0x3
+        heater1_code = (word >> 11) & 0x3
+        heater2_code = (word >> 13) & 0x3
+
+        heater_states = ["Выкл", "Нормальный", "Интенсивный", "Не исп."]
+        lines.append(f"[9-10]  Нагреватель 0: {heater_states[heater0_code]}")
+        lines.append(f"[11-12] Нагреватель 1: {heater_states[heater1_code]}")
+        lines.append(f"[13-14] Нагреватель 2: {heater_states[heater2_code]}")
 
         # Клапаны
         for i in range(3):
             valve_state = (word >> (24 + i)) & 1
-            lines.append(f"[{24 + i}]  Клапан {i + 1}: {'ОТКРЫТ' if valve_state else 'ЗАКРЫТ'}")
+            lines.append(f"[{24 + i}]    Клапан {i + 1}: {'ОТКРЫТ' if valve_state else 'ЗАКРЫТ'}")
 
         adc_power = (word >> 27) & 1
         mux_power = (word >> 28) & 1
-        lines.append(f"[27]   Питание АЦП: {'ВКЛ' if adc_power else 'ВЫКЛ'}")
-        lines.append(f"[28]   Питание МУХ: {'ВКЛ' if mux_power else 'ВЫКЛ'}")
+        lines.append(f"[27]    Питание АЦП: {'ВКЛ' if adc_power else 'ВЫКЛ'}")
+        lines.append(f"[28]    Питание мультиплексора: {'ВКЛ' if mux_power else 'ВЫКЛ'}")
 
-        sensor_code = (word >> 29) & 7
+        sensor_code = (word >> 29) & 0x7
         tank = sensor_code // 2 + 1
         sensor = sensor_code % 2 + 1
-        lines.append(f"[29–31] Опрос: Емкость {tank}, Датчик {sensor}")
+        lines.append(f"[29-31] Датчик: Емкость {tank}, Датчик {sensor}")
 
         self.decode_text.delete(1.0, tk.END)
         self.decode_text.insert(1.0, "\n".join(lines))
@@ -1223,13 +1269,11 @@ class LiquidComponentSimulator:
 
         self.pump_volt_var.set(f"{self.pump_voltage:.1f}")
 
+        # Обновление состояний нагревателей
+        heater_state_names = ["Выкл", "Нормальный", "Интенсивный"]
         for i in range(3):
-            heater_volt = 0
-            if self.heating_states[i] == 1:
-                heater_volt = 36
-            elif self.heating_states[i] == 2:
-                heater_volt = 86
-            self.heater_vars[i].set(f"{heater_volt:.1f}")
+            state_name = heater_state_names[self.heating_states[i]] if self.heating_states[i] < 3 else "Не исп."
+            self.heater_state_vars[i].set(state_name)
 
         # Обновление визуализации
         self.draw_tanks()
@@ -1240,6 +1284,7 @@ class LiquidComponentSimulator:
         # Обновление статуса
         self.stage_var.set(f"Этап: {self.get_stage_name()}")
         self.time_var.set(f"Время: {self.simulation_time:.1f} с")
+        self.cycle_var.set(f"Цикл: {self.cycle_count}")
         self.hold_time_var_display.set(f"Выдержка: {self.hold_time_counter:.0f}/{self.hold_time:.0f} с")
 
         # Обновление кнопки оператора
@@ -1271,11 +1316,8 @@ class LiquidComponentSimulator:
             display_points = min(100, len(self.time_data))
             time_display = self.time_data[-display_points:]
 
-            # График 1: Напряжения
+            # График 1: Напряжение насоса
             self.pump_line.set_data(time_display, self.pump_data[-display_points:])
-            self.heater1_line.set_data(time_display, self.heater1_data[-display_points:])
-            self.heater2_line.set_data(time_display, self.heater2_data[-display_points:])
-            self.heater3_line.set_data(time_display, self.heater3_data[-display_points:])
 
             # График 2: Температуры
             self.temp1_line.set_data(time_display, self.temp1_data[-display_points:])
