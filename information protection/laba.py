@@ -40,8 +40,21 @@ def generate_prime(start=1000, end=5000):
             return p
 
 
-# ------------------ RSA ------------------
+def discrete_log(c, g, p):
+    """Находит дискретный логарифм перебором (для малых p)."""
+    for x in range(p):
+        if pow(g, x, p) == c:
+            return x
+    return None
 
+
+def create_alphabet_mapping(alphabet):
+    """Создаёт словарь {символ: число} для заданного алфавита."""
+    return {ch: i for i, ch in enumerate(alphabet)}
+
+
+# ------------------ RSA ------------------
+# Модель Σ_RSA = <M*, Q, C*, E(m), D(c) | V(...)>
 class RSA:
     def generate_keys(self):
         p = generate_prime()
@@ -60,24 +73,26 @@ class RSA:
 
         d = modinv(e, phi)
 
-        self.public = (e, n)
-        self.private = (d, n)
+        self.public = (e, n)   # открытый ключ K_E
+        self.private = (d, n)  # закрытый ключ K_D
 
     def encrypt(self, text):
+        """E(m): c = m^e mod n для каждого символа."""
         e, n = self.public
         return [pow(ord(c), e, n) for c in text]
 
     def decrypt(self, cipher):
+        """D(c): m = c^d mod n для каждого числа."""
         d, n = self.private
         numbers = list(map(int, cipher.split()))
         return ''.join(chr(pow(c, d, n)) for c in numbers)
 
 
-# ------------------ АДДИТИВНЫЙ РЮКЗАК ------------------
-
+# ------------------ АДДИТИВНЫЙ РЮКЗАК (классический Merkle-Hellman) ------------------
+# Модель Σ_AK = <M*, Q, C*, E(m), D(c) | V(...)>
 class AdditiveKnapsack:
     def generate_keys(self, n=8):
-        # Сверхвозрастающая последовательность
+        # Секретная сверхрастущая последовательность w (Q для битов)
         self.w = []
         total = 0
         for _ in range(n):
@@ -85,19 +100,20 @@ class AdditiveKnapsack:
             self.w.append(val)
             total += val
 
-        # Модуль
+        # Модуль q > sum(w)
         self.q = random.randint(total + 1, total + 100)
 
-        # Множитель
+        # Множитель r, взаимно простой с q
         self.r = random.randint(2, self.q - 1)
         while gcd(self.r, self.q) != 1:
             self.r = random.randint(2, self.q - 1)
 
-        # Публичный ключ
+        # Открытый ключ A = r * w mod q
         self.public = [(self.r * wi) % self.q for wi in self.w]
         self.private = (self.w, self.q, self.r)
 
     def encrypt(self, text):
+        """E(m): для каждого символа представить его как 8 бит, вычислить сумму bi * Ai."""
         result = []
         for char in text:
             bits = format(ord(char), '08b')
@@ -106,6 +122,7 @@ class AdditiveKnapsack:
         return result
 
     def decrypt(self, cipher):
+        """D(c): для каждого числа восстановить биты через обратное преобразование."""
         w, q, r = self.private
         r_inv = modinv(r, q)
         text = ""
@@ -125,122 +142,193 @@ class AdditiveKnapsack:
         return text
 
 
-# ------------------ МУЛЬТИПЛИКАТИВНЫЙ РЮКЗАК ------------------
+# ------------------ МУЛЬТИПЛИКАТИВНЫЙ РЮКЗАК (на основе дискретного логарифма) ------------------
+# Модель Σ_MK = <M*, Q, C*, E(m), D(c) | V(...)>
+class MultiplicativeKnapsack:
+    def __init__(self):
+        # Параметры конечного поля (для демонстрации выбраны небольшие)
+        self.p = 257
+        self.g = 3   # порождающий элемент (должен быть примитивным корнем, для 257 3 подходит)
 
-class MultiplicativeKnapsack(AdditiveKnapsack):
     def generate_keys(self, n=8):
-        super().generate_keys(n)
+        # Секретная сверхрастущая последовательность s (битовые веса)
+        self.s = []
+        total = 0
+        for _ in range(n):
+            val = total + random.randint(1, 10)
+            self.s.append(val)
+            total += val
 
-        # Дополнительная мультипликативная трансформация
-        self.t = random.randint(2, self.q - 1)
-        while gcd(self.t, self.q) != 1:
-            self.t = random.randint(2, self.q - 1)
-
-        self.public = [(self.t * bi) % self.q for bi in self.public]
-        self.private = (self.w, self.q, self.r, self.t)
-
-    def decrypt(self, cipher):
-        w, q, r, t = self.private
-
-        t_inv = modinv(t, q)
-        r_inv = modinv(r, q)
-
-        text = ""
-
-        for num in cipher.split():
-            c = (int(num) * t_inv) % q
-            c = (c * r_inv) % q
-
-            bits = []
-            for wi in reversed(w):
-                if wi <= c:
-                    bits.append('1')
-                    c -= wi
-                else:
-                    bits.append('0')
-            bits.reverse()
-            text += chr(int(''.join(bits), 2))
-
-        return text
-
-
-# ------------------ ОБОБЩЕННЫЙ АДДИТИВНЫЙ ------------------
-
-class GeneralAdditive(AdditiveKnapsack):
-    def generate_keys(self):
-        super().generate_keys(n=16)  # 16-битные блоки
+        # Открытый ключ A = g^s mod p
+        self.public = [pow(self.g, si, self.p) for si in self.s]
+        self.private = (self.s, self.p, self.g)
 
     def encrypt(self, text):
+        """E(m): для каждого символа c = ∏ A_i^{bit_i} mod p."""
         result = []
         for char in text:
-            bits = format(ord(char), '016b')
-            s = sum(int(bits[i]) * self.public[i] for i in range(16))
-            result.append(str(s))
+            bits = format(ord(char), '08b')
+            c = 1
+            for i in range(8):
+                if bits[i] == '1':
+                    c = (c * self.public[i]) % self.p
+            result.append(str(c))
         return result
 
     def decrypt(self, cipher):
-        w, q, r = self.private
-        r_inv = modinv(r, q)
+        """D(c): для каждого числа находим дискретный логарифм и решаем сверхрастущий рюкзак."""
+        s, p, g = self.private
         text = ""
-
         for num in cipher.split():
-            c = (int(num) * r_inv) % q
+            c_int = int(num)
+            L = discrete_log(c_int, g, p)
+            if L is None:
+                raise Exception("Не удалось вычислить дискретный логарифм")
             bits = []
-            for wi in reversed(w):
-                if wi <= c:
+            remaining = L
+            for si in reversed(s):
+                if si <= remaining:
                     bits.append('1')
-                    c -= wi
+                    remaining -= si
                 else:
                     bits.append('0')
+            if remaining != 0:
+                raise Exception("Ошибка дешифрования: остаток не ноль")
             bits.reverse()
             text += chr(int(''.join(bits), 2))
-
         return text
 
 
-# ------------------ ОБОБЩЕННЫЙ МУЛЬТИПЛИКАТИВНЫЙ ------------------
+# ------------------ ОБОБЩЕННЫЙ АДДИТИВНЫЙ РЮКЗАК (многозначный алфавит) ------------------
+# Модель Σ_GAK = <M*, Q, C*, E(m), D(c) | V(...)>
+class GeneralAdditive:
+    def __init__(self):
+        # Алфавит и его числовые эквиваленты
+        self.alphabet = "0123456789"
+        self.mapping = create_alphabet_mapping(self.alphabet)
+        self.max_q = len(self.alphabet) - 1  # максимальное значение q (0..9)
 
-class GeneralMultiplicative(MultiplicativeKnapsack):
+    def generate_keys(self, n=16):
+        # Сверхрастущая последовательность с учётом max_q
+        self.w = []
+        total = 0
+        for _ in range(n):
+            val = total * self.max_q + random.randint(1, self.max_q * 10)
+            self.w.append(val)
+            total += val
 
-    def generate_keys(self):
-        super().generate_keys(n=16)
+        # Модуль q > max_q * sum(w)
+        self.q = random.randint(total * self.max_q + 1, total * self.max_q + 1000)
+
+        # Множитель r, взаимно простой с q
+        self.r = random.randint(2, self.q - 1)
+        while gcd(self.r, self.q) != 1:
+            self.r = random.randint(2, self.q - 1)
+
+        # Открытый ключ A = r * w mod q
+        self.public = [(self.r * wi) % self.q for wi in self.w]
+        self.private = (self.w, self.q, self.r, self.mapping, self.max_q)
 
     def encrypt(self, text):
-        result = []
-        for char in text:
-            bits = format(ord(char), '016b')
-            s = sum(int(bits[i]) * self.public[i] for i in range(16))
-            result.append(str(s))
-        return result
+        """E(m): сообщение длины n → одно число c = ∑ q_i * A_i."""
+        if len(text) != len(self.public):
+            raise Exception(f"Длина сообщения должна быть {len(self.public)}")
+        c = 0
+        for i, ch in enumerate(text):
+            if ch not in self.mapping:
+                raise Exception(f"Недопустимый символ: {ch}")
+            q_val = self.mapping[ch]
+            c += q_val * self.public[i]
+        return [str(c)]  # возвращаем список с одним элементом для совместимости с GUI
 
     def decrypt(self, cipher):
-        w, q, r, t = self.private
-
-        t_inv = modinv(t, q)
+        """D(c): по одному числу восстанавливаем сообщение."""
+        w, q, r, mapping, max_q = self.private
         r_inv = modinv(r, q)
 
-        text = ""
+        numbers = cipher.split()
+        if len(numbers) != 1:
+            raise Exception("Ожидается одно число")
+        c_int = int(numbers[0])
+        c_prime = (c_int * r_inv) % q
 
-        for num in cipher.split():
-            c = (int(num) * t_inv) % q
-            c = (c * r_inv) % q
+        # Жадный алгоритм для обобщённого рюкзака
+        q_values = []
+        remaining = c_prime
+        for wi in reversed(w):
+            qv = min(remaining // wi, max_q)
+            q_values.insert(0, qv)
+            remaining -= qv * wi
+        if remaining != 0:
+            raise Exception("Ошибка дешифрования")
 
-            bits = []
-            for wi in reversed(w):
-                if wi <= c:
-                    bits.append('1')
-                    c -= wi
-                else:
-                    bits.append('0')
-
-            bits.reverse()
-            text += chr(int(''.join(bits), 2))
-
+        # Обратное отображение чисел в символы
+        reverse_mapping = {v: k for k, v in mapping.items()}
+        text = ''.join(reverse_mapping[qv] for qv in q_values)
         return text
 
 
-# ------------------ GUI ------------------
+# ------------------ ОБОБЩЕННЫЙ МУЛЬТИПЛИКАТИВНЫЙ РЮКЗАК ------------------
+# Модель Σ_GMK = <M*, Q, C*, E(m), D(c) | V(...)>
+class GeneralMultiplicative:
+    def __init__(self):
+        self.alphabet = "0123456789"
+        self.mapping = create_alphabet_mapping(self.alphabet)
+        self.max_q = len(self.alphabet) - 1
+        self.p = 257
+        self.g = 3
 
+    def generate_keys(self, n=16):
+        # Секретная сверхрастущая последовательность с учётом max_q
+        self.s = []
+        total = 0
+        for _ in range(n):
+            val = total * self.max_q + random.randint(1, self.max_q * 10)
+            self.s.append(val)
+            total += val
+
+        # Открытый ключ A = g^s mod p
+        self.public = [pow(self.g, si, self.p) for si in self.s]
+        self.private = (self.s, self.p, self.g, self.mapping, self.max_q)
+
+    def encrypt(self, text):
+        """E(m): c = ∏ A_i^{q_i} mod p (одно число)."""
+        if len(text) != len(self.public):
+            raise Exception(f"Длина сообщения должна быть {len(self.public)}")
+        c = 1
+        for i, ch in enumerate(text):
+            q_val = self.mapping[ch]
+            c = (c * pow(self.public[i], q_val, self.p)) % self.p
+        return [str(c)]
+
+    def decrypt(self, cipher):
+        """D(c): дискретное логарифмирование + обобщённый сверхрастущий рюкзак."""
+        s, p, g, mapping, max_q = self.private
+
+        numbers = cipher.split()
+        if len(numbers) != 1:
+            raise Exception("Ожидается одно число")
+        c_int = int(numbers[0])
+
+        L = discrete_log(c_int, g, p)
+        if L is None:
+            raise Exception("Не удалось вычислить дискретный логарифм")
+
+        q_values = []
+        remaining = L
+        for si in reversed(s):
+            qv = min(remaining // si, max_q)
+            q_values.insert(0, qv)
+            remaining -= qv * si
+        if remaining != 0:
+            raise Exception("Ошибка дешифрования")
+
+        reverse_mapping = {v: k for k, v in mapping.items()}
+        text = ''.join(reverse_mapping[qv] for qv in q_values)
+        return text
+
+
+# ------------------ GUI (без изменений, только добавлены новые классы) ------------------
 class CryptoApp:
     def __init__(self, root):
         self.root = root
@@ -667,14 +755,11 @@ class CryptoApp:
 
 
 # ------------------ ЗАПУСК ------------------
-
 if __name__ == "__main__":
     root = tk.Tk()
-
     try:
         root.iconbitmap(default='icon.ico')
     except:
         pass
-
     app = CryptoApp(root)
     root.mainloop()
