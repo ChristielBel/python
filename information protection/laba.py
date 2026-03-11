@@ -85,8 +85,12 @@ class RSA:
         self.public = (e, n)
         self.private = (d, n)
 
+        # Формируем подробный вывод
+        self.public_str = f"Открытый ключ (e, n): ({e}, {n})\n\nПараметры:\np = {p}\nq = {q}\nφ(n) = {phi}"
+        self.private_str = f"Закрытый ключ (d, n): ({d}, {n})"
+
     def encrypt(self, text):
-        text = text.upper()  # приводим к верхнему регистру
+        text = text.upper()
         e, n = self.public
         result = []
         for ch in text:
@@ -132,6 +136,13 @@ class AdditiveKnapsack:
         # Открытый ключ A = r * w mod q
         self.public = [(self.r * wi) % self.q for wi in self.w]
         self.private = (self.w, self.q, self.r)
+
+        # Обратный элемент
+        r_inv = modinv(self.r, self.q)
+
+        # Формируем подробный вывод
+        self.public_str = f"Открытый ключ A = {self.public}\n\nПараметры (секретные):\nСверхрастущая B = {self.w}\nМодуль q = {self.q}\nМножитель r = {self.r}\nr⁻¹ mod q = {r_inv}"
+        self.private_str = f"Закрытый ключ:\nB = {self.w}\nq = {self.q}\nr = {self.r}"
 
     def encrypt(self, text):
         text = text.upper()
@@ -186,6 +197,10 @@ class MultiplicativeKnapsack:
         # Открытый ключ A = g^s mod p
         self.public = [pow(self.g, si, self.p) for si in self.s]
         self.private = (self.s, self.p, self.g)
+
+        # Формируем подробный вывод
+        self.public_str = f"Открытый ключ A = {self.public}\n\nПараметры:\nМодуль p = {self.p}\nПорождающий g = {self.g}"
+        self.private_str = f"Закрытый ключ:\nСверхрастущая s = {self.s}\np = {self.p}\ng = {self.g}"
 
     def encrypt(self, text):
         text = text.upper()
@@ -255,6 +270,13 @@ class GeneralAdditive:
         self.public = [(self.r * wi) % self.q for wi in self.w]
         self.private = (self.w, self.q, self.r, self.mapping, self.max_q)
 
+        # Обратный элемент
+        r_inv = modinv(self.r, self.q)
+
+        # Формируем подробный вывод
+        self.public_str = f"Открытый ключ A = {self.public}\n\nПараметры:\nmax_q = {self.max_q}\nМодуль q = {self.q}\nМножитель r = {self.r}\nr⁻¹ mod q = {r_inv}"
+        self.private_str = f"Закрытый ключ:\nСверхрастущая B = {self.w}\nq = {self.q}\nr = {self.r}"
+
     def encrypt(self, text):
         text = text.upper()
         if len(text) != len(self.public):
@@ -311,6 +333,10 @@ class GeneralMultiplicative:
         self.public = [pow(self.g, si, self.p) for si in self.s]
         self.private = (self.s, self.p, self.g, self.mapping, self.max_q)
 
+        # Формируем подробный вывод
+        self.public_str = f"Открытый ключ A = {self.public}\n\nПараметры:\nМодуль p = {self.p}\nПорождающий g = {self.g}\nmax_q = {self.max_q}"
+        self.private_str = f"Закрытый ключ:\nСверхрастущая s = {self.s}\np = {self.p}\ng = {self.g}"
+
     def encrypt(self, text):
         text = text.upper()
         if len(text) != len(self.public):
@@ -353,11 +379,43 @@ class HammingCode:
         self.alphabet = LATIN_ALPHABET
         self.symbol_to_code = SYMBOL_TO_CODE
         self.code_to_symbol = CODE_TO_SYMBOL
+        self.n = 7
+        self.k = 4
 
     def generate_keys(self):
-        # Для кода Хэмминга ключи не нужны, но метод должен быть
-        self.public = "Hamming code (7,4)"
-        self.private = "Hamming code (7,4)"
+        # Порождающая матрица в систематической форме G = [I_4 | P]
+        # Для кода Хэмминга (7,4) стандартная P матрица:
+        P = [
+            [1, 1, 0],
+            [1, 0, 1],
+            [0, 1, 1],
+            [1, 1, 1]
+        ]
+        # Проверочная матрица H = [P^T | I_3]
+        # Транспонируем P
+        P_T = [[P[j][i] for j in range(4)] for i in range(3)]
+        I3 = [[1 if i == j else 0 for j in range(3)] for i in range(3)]
+        H = [P_T[i] + I3[i] for i in range(3)]
+
+        # Формируем строки для отображения
+        def mat_to_str(mat):
+            return '\n'.join(' '.join(str(x) for x in row) for row in mat)
+
+        g_rows = []
+        for i in range(4):
+            # Единичная матрица 4x4
+            row = [0] * 4
+            row[i] = 1
+            g_rows.append(row + P[i])
+
+        g_str = "Порождающая матрица G (систематическая) [I|P]:\n"
+        g_str += mat_to_str(g_rows)
+
+        h_str = "Проверочная матрица H [P^T|I]:\n"
+        h_str += mat_to_str(H)
+
+        self.public_str = f"Код Хэмминга (7,4)\nПараметры: n={self.n}, k={self.k}, d=3\n\n{g_str}"
+        self.private_str = f"{h_str}\n\nСиндром указывает позицию ошибки (1..7)"
 
     def _symbols_to_bits(self, text):
         bits = ''
@@ -376,16 +434,13 @@ class HammingCode:
         return symbols
 
     def _encode_block(self, data_bits):
-        # data_bits - строка из 4 бит
         m = [int(b) for b in data_bits]
         p1 = m[0] ^ m[1] ^ m[3]
         p2 = m[0] ^ m[2] ^ m[3]
         p3 = m[1] ^ m[2] ^ m[3]
-        # порядок: p1, p2, m0, p3, m1, m2, m3
         return f"{p1}{p2}{m[0]}{p3}{m[1]}{m[2]}{m[3]}"
 
     def _decode_block(self, code_bits):
-        # code_bits - строка из 7 бит
         c = [int(b) for b in code_bits]
         s1 = c[0] ^ c[2] ^ c[4] ^ c[6]
         s2 = c[1] ^ c[2] ^ c[5] ^ c[6]
@@ -395,7 +450,6 @@ class HammingCode:
             pos = syndrome - 1
             if 0 <= pos < 7:
                 c[pos] ^= 1
-        # информационные биты: позиции 2,4,5,6 (0-based)
         return f"{c[2]}{c[4]}{c[5]}{c[6]}"
 
     def encrypt(self, text):
@@ -422,7 +476,6 @@ class HammingCode:
 
 # ------------------ GUI ------------------
 class CryptoApp:
-
     def __init__(self, root):
         self.root = root
         self.root.title("🔐 CryptoLab")
@@ -445,125 +498,64 @@ class CryptoApp:
 
     # ---------------- STYLE ----------------
     def setup_style(self):
-
         style = ttk.Style()
         style.theme_use("clam")
-
-        style.configure(
-            "Accent.TButton",
-            font=("Segoe UI", 10, "bold"),
-            padding=8
-        )
-
-        style.configure(
-            "Secondary.TButton",
-            font=("Segoe UI", 10),
-            padding=8
-        )
-
-        style.configure(
-            "TLabel",
-            font=("Segoe UI", 10)
-        )
+        style.configure("Accent.TButton", font=("Segoe UI", 10, "bold"), padding=8)
+        style.configure("Secondary.TButton", font=("Segoe UI", 10), padding=8)
+        style.configure("TLabel", font=("Segoe UI", 10))
 
     # ---------------- CARD ----------------
     def create_card(self, parent, title):
-
         frame = tk.Frame(parent, bd=1, relief="solid", padx=15, pady=10)
-
-        label = tk.Label(
-            frame,
-            text=title,
-            font=("Segoe UI", 12, "bold")
-        )
+        label = tk.Label(frame, text=title, font=("Segoe UI", 12, "bold"))
         label.pack(anchor="w", pady=(0, 10))
-
-        sep = ttk.Separator(frame)
-        sep.pack(fill="x", pady=(0, 10))
-
+        ttk.Separator(frame).pack(fill="x", pady=(0, 10))
         content = tk.Frame(frame)
         content.pack(fill="both", expand=True)
-
         return frame, content
 
     # ---------------- TEXT FIELD ----------------
     def create_text(self, parent, height):
-
         frame = tk.Frame(parent)
-
-        text = tk.Text(
-            frame,
-            height=height,
-            font=("Consolas", 11),
-            wrap="word",
-            padx=10,
-            pady=10
-        )
-
+        text = tk.Text(frame, height=height, font=("Consolas", 11), wrap="word", padx=10, pady=10)
         scroll = ttk.Scrollbar(frame, command=text.yview)
         text.configure(yscrollcommand=scroll.set)
-
         text.pack(side="left", fill="both", expand=True)
         scroll.pack(side="right", fill="y")
-
         frame.pack(fill="both", expand=True)
-
         return text
 
     # ---------------- UI ----------------
     def build_ui(self):
-
         container = tk.Frame(self.root)
         container.pack(fill="both", expand=True, padx=20, pady=20)
 
         # HEADER
         header = tk.Frame(container)
         header.pack(fill="x", pady=(0, 20))
-
-        title = tk.Label(
-            header,
-            text="🔐 CryptoLab",
-            font=("Segoe UI", 26, "bold")
-        )
-        title.pack(anchor="w")
-
-        subtitle = tk.Label(
-            header,
-            text="Учебная лаборатория криптографических алгоритмов",
-            font=("Segoe UI", 10)
-        )
-        subtitle.pack(anchor="w")
+        tk.Label(header, text="🔐 CryptoLab", font=("Segoe UI", 26, "bold")).pack(anchor="w")
+        tk.Label(header, text="Учебная лаборатория криптографических алгоритмов", font=("Segoe UI", 10)).pack(anchor="w")
 
         # ALGORITHM
         card, content = self.create_card(container, "Алгоритм")
         card.pack(fill="x", pady=(0, 15))
 
-        self.combo = ttk.Combobox(
-            content,
-            values=list(self.algorithms.keys()),
-            state="readonly",
-            width=40
-        )
+        self.combo = ttk.Combobox(content, values=list(self.algorithms.keys()), state="readonly", width=40)
         self.combo.pack(side="left", padx=(0, 10))
         self.combo.bind("<<ComboboxSelected>>", self.select_algorithm)
 
-        self.generate_btn = ttk.Button(
-            content,
-            text="🔑 Сгенерировать ключи",
-            command=self.generate_keys,
-            style="Accent.TButton"
-        )
+        self.generate_btn = ttk.Button(content, text="🔑 Сгенерировать ключи", command=self.generate_keys, style="Accent.TButton")
         self.generate_btn.pack(side="left")
 
         # KEYS
         card, content = self.create_card(container, "Ключи")
         card.pack(fill="x", pady=(0, 15))
 
-        tk.Label(content, text="Публичный ключ").pack(anchor="w")
-        self.public_key = self.create_text(content, 2)
+        tk.Label(content, text="Публичный ключ / параметры").pack(anchor="w")
+        self.public_key = self.create_text(content, 4)
 
-        tk.Label(content, text="Приватный ключ").pack(anchor="w", pady=(10, 0))
-        self.private_key = self.create_text(content, 2)
+        tk.Label(content, text="Приватный ключ / параметры").pack(anchor="w", pady=(10, 0))
+        self.private_key = self.create_text(content, 4)
 
         # INPUT
         card, content = self.create_card(container, "Сообщение / Шифртекст")
@@ -575,36 +567,16 @@ class CryptoApp:
         buttons = tk.Frame(container)
         buttons.pack(pady=10)
 
-        self.encrypt_btn = ttk.Button(
-            buttons,
-            text="🔒 Зашифровать",
-            command=self.encrypt,
-            style="Accent.TButton"
-        )
+        self.encrypt_btn = ttk.Button(buttons, text="🔒 Зашифровать", command=self.encrypt, style="Accent.TButton")
         self.encrypt_btn.pack(side="left", padx=5)
 
-        self.decrypt_btn = ttk.Button(
-            buttons,
-            text="🔓 Расшифровать",
-            command=self.decrypt,
-            style="Accent.TButton"
-        )
+        self.decrypt_btn = ttk.Button(buttons, text="🔓 Расшифровать", command=self.decrypt, style="Accent.TButton")
         self.decrypt_btn.pack(side="left", padx=5)
 
-        self.copy_btn = ttk.Button(
-            buttons,
-            text="📋 Копировать результат",
-            command=self.copy_output,
-            style="Secondary.TButton"
-        )
+        self.copy_btn = ttk.Button(buttons, text="📋 Копировать результат", command=self.copy_output, style="Secondary.TButton")
         self.copy_btn.pack(side="left", padx=5)
 
-        self.clear_btn = ttk.Button(
-            buttons,
-            text="🗑 Очистить",
-            command=self.clear_all,
-            style="Secondary.TButton"
-        )
+        self.clear_btn = ttk.Button(buttons, text="🗑 Очистить", command=self.clear_all, style="Secondary.TButton")
         self.clear_btn.pack(side="left", padx=5)
 
         # RESULT
@@ -614,12 +586,7 @@ class CryptoApp:
         self.output_text = self.create_text(content, 6)
 
         # STATUS
-        self.status = tk.Label(
-            self.root,
-            text="Готово",
-            anchor="w",
-            padx=10
-        )
+        self.status = tk.Label(self.root, text="Готово", anchor="w", padx=10)
         self.status.pack(fill="x", side="bottom")
 
         # PROGRESS
@@ -638,13 +605,11 @@ class CryptoApp:
 
     # ---------------- KEYS ----------------
     def generate_keys(self):
-
         if not self.current_algo:
             messagebox.showerror("Ошибка", "Выберите алгоритм")
             return
 
         try:
-
             self.progress.start()
             self.root.update()
 
@@ -655,20 +620,24 @@ class CryptoApp:
             self.public_key.delete("1.0", tk.END)
             self.private_key.delete("1.0", tk.END)
 
-            if hasattr(self.current_algo, "public"):
+            if hasattr(self.current_algo, "public_str"):
+                self.public_key.insert(tk.END, self.current_algo.public_str)
+            elif hasattr(self.current_algo, "public"):
                 self.public_key.insert(tk.END, str(self.current_algo.public))
 
-            if hasattr(self.current_algo, "private"):
+            if hasattr(self.current_algo, "private_str"):
+                self.private_key.insert(tk.END, self.current_algo.private_str)
+            elif hasattr(self.current_algo, "private"):
                 self.private_key.insert(tk.END, str(self.current_algo.private))
 
             self.set_status("Ключи сгенерированы")
 
         except Exception as e:
+            self.progress.stop()
             messagebox.showerror("Ошибка", str(e))
 
     # ---------------- ENCRYPT ----------------
     def encrypt(self):
-
         if not self.current_algo:
             messagebox.showerror("Ошибка", "Выберите алгоритм")
             return
@@ -676,24 +645,17 @@ class CryptoApp:
         text = self.input_text.get("1.0", tk.END).strip()
 
         try:
-
             result = self.current_algo.encrypt(text)
-
             self.output_text.delete("1.0", tk.END)
-
             if isinstance(result, list):
                 result = " ".join(result)
-
             self.output_text.insert(tk.END, result)
-
             self.set_status("Текст зашифрован")
-
         except Exception as e:
             messagebox.showerror("Ошибка", str(e))
 
     # ---------------- DECRYPT ----------------
     def decrypt(self):
-
         if not self.current_algo:
             messagebox.showerror("Ошибка", "Выберите алгоритм")
             return
@@ -701,38 +663,24 @@ class CryptoApp:
         text = self.input_text.get("1.0", tk.END).strip()
 
         try:
-
             result = self.current_algo.decrypt(text)
-
             self.output_text.delete("1.0", tk.END)
             self.output_text.insert(tk.END, result)
-
             self.set_status("Текст расшифрован")
-
         except Exception as e:
             messagebox.showerror("Ошибка", str(e))
 
     # ---------------- COPY ----------------
     def copy_output(self):
-
         text = self.output_text.get("1.0", tk.END).strip()
-
         self.root.clipboard_clear()
         self.root.clipboard_append(text)
-
         self.set_status("Результат скопирован")
 
     # ---------------- CLEAR ----------------
     def clear_all(self):
-
-        for widget in [
-            self.public_key,
-            self.private_key,
-            self.input_text,
-            self.output_text
-        ]:
+        for widget in [self.public_key, self.private_key, self.input_text, self.output_text]:
             widget.delete("1.0", tk.END)
-
         self.set_status("Поля очищены")
 
 
