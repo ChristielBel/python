@@ -422,12 +422,12 @@ class HammingCode:
 
 # ------------------ GUI ------------------
 class CryptoApp:
+
     def __init__(self, root):
         self.root = root
-        self.root.title("🔐 Криптографическая лаборатория")
-        self.root.geometry("1000x750")
-
-        self.setup_theme()
+        self.root.title("🔐 CryptoLab")
+        self.root.geometry("1000x720")
+        self.root.minsize(900, 650)
 
         self.algorithms = {
             "RSA": RSA(),
@@ -439,400 +439,301 @@ class CryptoApp:
         }
 
         self.current_algo = None
-        self.current_theme = "dark"
 
-        self.create_menu()
+        self.setup_style()
         self.build_ui()
-        self.apply_theme()
 
-    def setup_theme(self):
-        self.themes = {
-            "dark": {
-                "bg": "#1a1b26",
-                "fg": "#c0caf5",
-                "accent": "#7aa2f7",
-                "accent_hover": "#5d8ce8",
-                "surface": "#24283b",
-                "surface_light": "#2f334d",
-                "text": "#c0caf5",
-                "text_secondary": "#9aa5ce",
-                "success": "#9ece6a",
-                "error": "#f7768e",
-                "border": "#414868"
-            },
-            "light": {
-                "bg": "#f5f5f5",
-                "fg": "#2c3e50",
-                "accent": "#3498db",
-                "accent_hover": "#2980b9",
-                "surface": "#ffffff",
-                "surface_light": "#ecf0f1",
-                "text": "#2c3e50",
-                "text_secondary": "#7f8c8d",
-                "success": "#27ae60",
-                "error": "#e74c3c",
-                "border": "#bdc3c7"
-            }
-        }
+    # ---------------- STYLE ----------------
+    def setup_style(self):
 
-    def create_menu(self):
-        menubar = tk.Menu(self.root)
-        self.root.config(menu=menubar)
+        style = ttk.Style()
+        style.theme_use("clam")
 
-        file_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="📁 Файл", menu=file_menu)
-        file_menu.add_command(label="Очистить всё", command=self.clear_all)
-        file_menu.add_separator()
-        file_menu.add_command(label="Выход", command=self.root.quit)
-
-        view_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="👁 Вид", menu=view_menu)
-        view_menu.add_command(label="🌙 Темная тема", command=lambda: self.change_theme("dark"))
-        view_menu.add_command(label="☀️ Светлая тема", command=lambda: self.change_theme("light"))
-
-    def create_styled_button(self, parent, text, command, style="primary"):
-        btn = tk.Button(
-            parent,
-            text=text,
-            command=command,
+        style.configure(
+            "Accent.TButton",
             font=("Segoe UI", 10, "bold"),
-            padx=20,
-            pady=8,
-            borderwidth=0,
-            cursor="hand2"
+            padding=8
         )
-        return btn
 
-    def create_card(self, parent, title, **kwargs):
-        frame = tk.Frame(parent, **kwargs)
+        style.configure(
+            "Secondary.TButton",
+            font=("Segoe UI", 10),
+            padding=8
+        )
 
-        header = tk.Frame(frame, height=40)
-        header.pack(fill="x", padx=15, pady=(10, 0))
+        style.configure(
+            "TLabel",
+            font=("Segoe UI", 10)
+        )
 
-        title_label = tk.Label(
-            header,
+    # ---------------- CARD ----------------
+    def create_card(self, parent, title):
+
+        frame = tk.Frame(parent, bd=1, relief="solid", padx=15, pady=10)
+
+        label = tk.Label(
+            frame,
             text=title,
             font=("Segoe UI", 12, "bold")
         )
-        title_label.pack(side="left")
+        label.pack(anchor="w", pady=(0, 10))
 
-        separator = tk.Frame(frame, height=2)
-        separator.pack(fill="x", padx=15, pady=(5, 10))
+        sep = ttk.Separator(frame)
+        sep.pack(fill="x", pady=(0, 10))
 
         content = tk.Frame(frame)
-        content.pack(fill="both", expand=True, padx=15, pady=(0, 15))
+        content.pack(fill="both", expand=True)
 
         return frame, content
 
-    def build_ui(self):
-        main_container = tk.Frame(self.root)
-        main_container.pack(fill="both", expand=True, padx=20, pady=20)
+    # ---------------- TEXT FIELD ----------------
+    def create_text(self, parent, height):
 
-        header_frame = tk.Frame(main_container)
-        header_frame.pack(fill="x", pady=(0, 20))
+        frame = tk.Frame(parent)
+
+        text = tk.Text(
+            frame,
+            height=height,
+            font=("Consolas", 11),
+            wrap="word",
+            padx=10,
+            pady=10
+        )
+
+        scroll = ttk.Scrollbar(frame, command=text.yview)
+        text.configure(yscrollcommand=scroll.set)
+
+        text.pack(side="left", fill="both", expand=True)
+        scroll.pack(side="right", fill="y")
+
+        frame.pack(fill="both", expand=True)
+
+        return text
+
+    # ---------------- UI ----------------
+    def build_ui(self):
+
+        container = tk.Frame(self.root)
+        container.pack(fill="both", expand=True, padx=20, pady=20)
+
+        # HEADER
+        header = tk.Frame(container)
+        header.pack(fill="x", pady=(0, 20))
 
         title = tk.Label(
-            header_frame,
-            text="🔐 Криптографическая лаборатория",
-            font=("Segoe UI", 24, "bold")
+            header,
+            text="🔐 CryptoLab",
+            font=("Segoe UI", 26, "bold")
         )
-        title.pack(side="left")
+        title.pack(anchor="w")
 
-        algo_frame = tk.Frame(main_container)
-        algo_frame.pack(fill="x", pady=(0, 20))
+        subtitle = tk.Label(
+            header,
+            text="Учебная лаборатория криптографических алгоритмов",
+            font=("Segoe UI", 10)
+        )
+        subtitle.pack(anchor="w")
 
-        algo_card, algo_content = self.create_card(algo_frame, "Выбор алгоритма")
-        algo_card.pack(fill="x")
+        # ALGORITHM
+        card, content = self.create_card(container, "Алгоритм")
+        card.pack(fill="x", pady=(0, 15))
 
         self.combo = ttk.Combobox(
-            algo_content,
+            content,
             values=list(self.algorithms.keys()),
             state="readonly",
-            font=("Segoe UI", 11),
             width=40
         )
         self.combo.pack(side="left", padx=(0, 10))
         self.combo.bind("<<ComboboxSelected>>", self.select_algorithm)
 
-        self.generate_btn = self.create_styled_button(
-            algo_content,
-            "🔑 Сгенерировать ключи",
-            self.generate_keys,
-            "primary"
+        self.generate_btn = ttk.Button(
+            content,
+            text="🔑 Сгенерировать ключи",
+            command=self.generate_keys,
+            style="Accent.TButton"
         )
         self.generate_btn.pack(side="left")
 
-        keys_card, keys_content = self.create_card(main_container, "Ключи")
-        keys_card.pack(fill="x", pady=(0, 20))
+        # KEYS
+        card, content = self.create_card(container, "Ключи")
+        card.pack(fill="x", pady=(0, 15))
 
-        pub_frame = tk.Frame(keys_content)
-        pub_frame.pack(fill="x", pady=(0, 10))
+        tk.Label(content, text="Публичный ключ").pack(anchor="w")
+        self.public_key = self.create_text(content, 2)
 
-        tk.Label(
-            pub_frame,
-            text="🔓 Публичный ключ:",
-            font=("Segoe UI", 10, "bold")
-        ).pack(anchor="w")
+        tk.Label(content, text="Приватный ключ").pack(anchor="w", pady=(10, 0))
+        self.private_key = self.create_text(content, 2)
 
-        self.public_key_text = self.create_text_widget(pub_frame, 3)
-        self.public_key_text.pack(fill="x", pady=(5, 0))
+        # INPUT
+        card, content = self.create_card(container, "Сообщение / Шифртекст")
+        card.pack(fill="x", pady=(0, 15))
 
-        priv_frame = tk.Frame(keys_content)
-        priv_frame.pack(fill="x")
+        self.input_text = self.create_text(content, 4)
 
-        tk.Label(
-            priv_frame,
-            text="🔐 Приватный ключ:",
-            font=("Segoe UI", 10, "bold")
-        ).pack(anchor="w")
+        # BUTTONS
+        buttons = tk.Frame(container)
+        buttons.pack(pady=10)
 
-        self.private_key_text = self.create_text_widget(priv_frame, 3)
-        self.private_key_text.pack(fill="x", pady=(5, 0))
-
-        input_card, input_content = self.create_card(main_container, "Сообщение / Шифртекст")
-        input_card.pack(fill="x", pady=(0, 20))
-
-        self.input_text = self.create_text_widget(input_content, 4)
-        self.input_text.pack(fill="x")
-
-        action_frame = tk.Frame(main_container)
-        action_frame.pack(fill="x", pady=(0, 20))
-
-        button_container = tk.Frame(action_frame)
-        button_container.pack(expand=True)
-
-        self.encrypt_btn = self.create_styled_button(
-            button_container,
-            "🔒 Зашифровать",
-            self.encrypt,
-            "success"
+        self.encrypt_btn = ttk.Button(
+            buttons,
+            text="🔒 Зашифровать",
+            command=self.encrypt,
+            style="Accent.TButton"
         )
-        self.encrypt_btn.pack(side="left", padx=10)
+        self.encrypt_btn.pack(side="left", padx=5)
 
-        self.decrypt_btn = self.create_styled_button(
-            button_container,
-            "🔓 Расшифровать",
-            self.decrypt,
-            "success"
+        self.decrypt_btn = ttk.Button(
+            buttons,
+            text="🔓 Расшифровать",
+            command=self.decrypt,
+            style="Accent.TButton"
         )
-        self.decrypt_btn.pack(side="left", padx=10)
+        self.decrypt_btn.pack(side="left", padx=5)
 
-        self.clear_btn = self.create_styled_button(
-            button_container,
-            "🗑 Очистить",
-            self.clear_all,
-            "secondary"
+        self.copy_btn = ttk.Button(
+            buttons,
+            text="📋 Копировать результат",
+            command=self.copy_output,
+            style="Secondary.TButton"
         )
-        self.clear_btn.pack(side="left", padx=10)
+        self.copy_btn.pack(side="left", padx=5)
 
-        result_card, result_content = self.create_card(main_container, "Результат")
-        result_card.pack(fill="both", expand=True)
+        self.clear_btn = ttk.Button(
+            buttons,
+            text="🗑 Очистить",
+            command=self.clear_all,
+            style="Secondary.TButton"
+        )
+        self.clear_btn.pack(side="left", padx=5)
 
-        self.output_text = self.create_text_widget(result_content, 6)
-        self.output_text.pack(fill="both", expand=True)
+        # RESULT
+        card, content = self.create_card(container, "Результат")
+        card.pack(fill="both", expand=True, pady=(10, 0))
 
-        self.status_bar = tk.Label(
+        self.output_text = self.create_text(content, 6)
+
+        # STATUS
+        self.status = tk.Label(
             self.root,
-            text="Готов к работе",
-            font=("Segoe UI", 9),
+            text="Готово",
             anchor="w",
-            padx=20
+            padx=10
         )
-        self.status_bar.pack(side="bottom", fill="x")
+        self.status.pack(fill="x", side="bottom")
 
-    def create_text_widget(self, parent, height):
-        text_frame = tk.Frame(parent)
+        # PROGRESS
+        self.progress = ttk.Progressbar(self.root, mode="indeterminate")
+        self.progress.pack(fill="x", side="bottom")
 
-        text = tk.Text(
-            text_frame,
-            height=height,
-            font=("Consolas", 11),
-            wrap="word",
-            padx=10,
-            pady=10,
-            borderwidth=1,
-            relief="solid"
-        )
-        text.pack(side="left", fill="both", expand=True)
+    # ---------------- STATUS ----------------
+    def set_status(self, text):
+        self.status.config(text="  " + text)
 
-        scrollbar = tk.Scrollbar(text_frame, command=text.yview)
-        scrollbar.pack(side="right", fill="y")
-        text.config(yscrollcommand=scrollbar.set)
-
-        text_frame.pack(fill="both", expand=True)
-        return text
-
-    def apply_theme(self):
-        theme = self.themes[self.current_theme]
-
-        self.root.configure(bg=theme["bg"])
-
-        self.update_widget_colors(self.root, theme)
-
-        self.status_bar.configure(
-            bg=theme["surface"],
-            fg=theme["text_secondary"]
-        )
-
-        for text_widget in [self.public_key_text, self.private_key_text,
-                            self.input_text, self.output_text]:
-            text_widget.configure(
-                bg=theme["surface"],
-                fg=theme["text"],
-                insertbackground=theme["accent"],
-                selectbackground=theme["accent"],
-                selectforeground=theme["bg"]
-            )
-
-        self.generate_btn.configure(
-            bg=theme["accent"],
-            fg=theme["bg"],
-            activebackground=theme["accent_hover"],
-            activeforeground=theme["bg"]
-        )
-
-        for btn in [self.encrypt_btn, self.decrypt_btn]:
-            btn.configure(
-                bg=theme["success"],
-                fg=theme["bg"],
-                activebackground=theme["success"],
-                activeforeground=theme["bg"]
-            )
-
-        self.clear_btn.configure(
-            bg=theme["surface_light"],
-            fg=theme["text"],
-            activebackground=theme["border"],
-            activeforeground=theme["text"]
-        )
-
-        style = ttk.Style()
-        style.theme_use('clam')
-        style.configure(
-            "TCombobox",
-            fieldbackground=theme["surface"],
-            background=theme["surface"],
-            foreground=theme["text"],
-            arrowcolor=theme["text"],
-            bordercolor=theme["border"],
-            lightcolor=theme["border"],
-            darkcolor=theme["border"]
-        )
-
-        self.update_theme_indicator()
-
-    def update_widget_colors(self, widget, theme):
-        try:
-            if isinstance(widget, tk.Frame):
-                widget.configure(bg=theme["bg"])
-            elif isinstance(widget, tk.Label):
-                if widget.cget("font") == ("Segoe UI", 24, "bold"):
-                    widget.configure(bg=theme["bg"], fg=theme["accent"])
-                elif widget.cget("font") == ("Segoe UI", 12, "bold"):
-                    widget.configure(bg=theme["bg"], fg=theme["accent"])
-                else:
-                    widget.configure(bg=theme["bg"], fg=theme["text"])
-            elif isinstance(widget, tk.Button):
-                pass
-        except:
-            pass
-
-        for child in widget.winfo_children():
-            self.update_widget_colors(child, theme)
-
-    def update_theme_indicator(self):
-        pass
-
-    def change_theme(self, theme_name):
-        self.current_theme = theme_name
-        self.apply_theme()
-        self.update_status(f"Тема изменена на {theme_name}")
-
-    def update_status(self, message):
-        self.status_bar.config(text=f"  {message}")
-
-    def clear_all(self):
-        self.public_key_text.delete("1.0", tk.END)
-        self.private_key_text.delete("1.0", tk.END)
-        self.input_text.delete("1.0", tk.END)
-        self.output_text.delete("1.0", tk.END)
-        self.update_status("Все поля очищены")
-
+    # ---------------- ALGO ----------------
     def select_algorithm(self, event):
         name = self.combo.get()
         self.current_algo = self.algorithms[name]
-        self.update_status(f"Выбран алгоритм: {name}")
+        self.set_status(f"Выбран алгоритм: {name}")
 
+    # ---------------- KEYS ----------------
     def generate_keys(self):
+
         if not self.current_algo:
             messagebox.showerror("Ошибка", "Выберите алгоритм")
             return
 
         try:
-            self.public_key_text.delete("1.0", tk.END)
-            self.private_key_text.delete("1.0", tk.END)
+
+            self.progress.start()
+            self.root.update()
 
             self.current_algo.generate_keys()
 
+            self.progress.stop()
+
+            self.public_key.delete("1.0", tk.END)
+            self.private_key.delete("1.0", tk.END)
+
             if hasattr(self.current_algo, "public"):
-                self.public_key_text.insert(tk.END, str(self.current_algo.public))
+                self.public_key.insert(tk.END, str(self.current_algo.public))
 
             if hasattr(self.current_algo, "private"):
-                self.private_key_text.insert(tk.END, str(self.current_algo.private))
+                self.private_key.insert(tk.END, str(self.current_algo.private))
 
-            self.update_status("Ключи успешно сгенерированы")
+            self.set_status("Ключи сгенерированы")
 
         except Exception as e:
             messagebox.showerror("Ошибка", str(e))
-            self.update_status(f"Ошибка: {str(e)}")
 
+    # ---------------- ENCRYPT ----------------
     def encrypt(self):
+
         if not self.current_algo:
             messagebox.showerror("Ошибка", "Выберите алгоритм")
             return
 
         text = self.input_text.get("1.0", tk.END).strip()
 
-        if not text:
-            messagebox.showwarning("Предупреждение", "Введите текст для шифрования")
-            return
-
         try:
+
             result = self.current_algo.encrypt(text)
+
             self.output_text.delete("1.0", tk.END)
 
             if isinstance(result, list):
-                output = " ".join(map(str, result))
-            else:
-                output = str(result)
+                result = " ".join(result)
 
-            self.output_text.insert(tk.END, output)
-            self.update_status(f"✅ Текст успешно зашифрован")
+            self.output_text.insert(tk.END, result)
+
+            self.set_status("Текст зашифрован")
 
         except Exception as e:
             messagebox.showerror("Ошибка", str(e))
-            self.update_status(f"❌ Ошибка шифрования: {str(e)}")
 
+    # ---------------- DECRYPT ----------------
     def decrypt(self):
+
         if not self.current_algo:
             messagebox.showerror("Ошибка", "Выберите алгоритм")
             return
 
         text = self.input_text.get("1.0", tk.END).strip()
 
-        if not text:
-            messagebox.showwarning("Предупреждение", "Введите текст для расшифровки")
-            return
-
         try:
+
             result = self.current_algo.decrypt(text)
+
             self.output_text.delete("1.0", tk.END)
             self.output_text.insert(tk.END, result)
-            self.update_status(f"✅ Текст успешно расшифрован")
+
+            self.set_status("Текст расшифрован")
 
         except Exception as e:
             messagebox.showerror("Ошибка", str(e))
-            self.update_status(f"❌ Ошибка расшифровки: {str(e)}")
+
+    # ---------------- COPY ----------------
+    def copy_output(self):
+
+        text = self.output_text.get("1.0", tk.END).strip()
+
+        self.root.clipboard_clear()
+        self.root.clipboard_append(text)
+
+        self.set_status("Результат скопирован")
+
+    # ---------------- CLEAR ----------------
+    def clear_all(self):
+
+        for widget in [
+            self.public_key,
+            self.private_key,
+            self.input_text,
+            self.output_text
+        ]:
+            widget.delete("1.0", tk.END)
+
+        self.set_status("Поля очищены")
 
 
 # ------------------ ЗАПУСК ------------------
