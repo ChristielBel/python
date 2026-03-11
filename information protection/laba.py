@@ -4,8 +4,23 @@ import random
 from math import gcd
 
 
-# ------------------ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ------------------
+# ------------------ ГЛОБАЛЬНЫЙ АЛФАВИТ (латинские буквы + пробел) ------------------
+LATIN_ALPHABET = " ABCDEFGHIJKLMNOPQRSTUVWXYZ"  # пробел на позиции 0
+SYMBOL_TO_CODE = {ch: i for i, ch in enumerate(LATIN_ALPHABET)}
+CODE_TO_SYMBOL = {i: ch for i, ch in enumerate(LATIN_ALPHABET)}
 
+
+def code_to_5bits(code):
+    """Возвращает 5-битное строковое представление числа code (0-31)."""
+    return format(code, '05b')
+
+
+def bits5_to_code(bits):
+    """Из 5-битной строки получает число."""
+    return int(bits, 2)
+
+
+# ------------------ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ------------------
 def egcd(a, b):
     if b == 0:
         return a, 1, 0
@@ -48,13 +63,7 @@ def discrete_log(c, g, p):
     return None
 
 
-def create_alphabet_mapping(alphabet):
-    """Создаёт словарь {символ: число} для заданного алфавита."""
-    return {ch: i for i, ch in enumerate(alphabet)}
-
-
 # ------------------ RSA ------------------
-# Модель Σ_RSA = <M*, Q, C*, E(m), D(c) | V(...)>
 class RSA:
     def generate_keys(self):
         p = generate_prime()
@@ -73,29 +82,41 @@ class RSA:
 
         d = modinv(e, phi)
 
-        self.public = (e, n)   # открытый ключ K_E
-        self.private = (d, n)  # закрытый ключ K_D
+        self.public = (e, n)
+        self.private = (d, n)
 
     def encrypt(self, text):
-        """E(m): c = m^e mod n для каждого символа."""
+        text = text.upper()  # приводим к верхнему регистру
         e, n = self.public
-        return [pow(ord(c), e, n) for c in text]
+        result = []
+        for ch in text:
+            if ch not in SYMBOL_TO_CODE:
+                raise Exception(f"Недопустимый символ: {ch}")
+            m = SYMBOL_TO_CODE[ch]
+            c = pow(m, e, n)
+            result.append(str(c))
+        return result
 
     def decrypt(self, cipher):
-        """D(c): m = c^d mod n для каждого числа."""
         d, n = self.private
         numbers = list(map(int, cipher.split()))
-        return ''.join(chr(pow(c, d, n)) for c in numbers)
+        result = ''
+        for c in numbers:
+            m = pow(c, d, n)
+            result += CODE_TO_SYMBOL[m]
+        return result
 
 
-# ------------------ АДДИТИВНЫЙ РЮКЗАК (классический Merkle-Hellman) ------------------
-# Модель Σ_AK = <M*, Q, C*, E(m), D(c) | V(...)>
+# ------------------ АДДИТИВНЫЙ РЮКЗАК (Merkle-Hellman) ------------------
 class AdditiveKnapsack:
-    def generate_keys(self, n=8):
-        # Секретная сверхрастущая последовательность w (Q для битов)
+    def __init__(self):
+        self.n = 5  # используем 5 бит на символ
+
+    def generate_keys(self):
+        # Сверхрастущая последовательность длины n
         self.w = []
         total = 0
-        for _ in range(n):
+        for _ in range(self.n):
             val = total + random.randint(1, 20)
             self.w.append(val)
             total += val
@@ -113,20 +134,21 @@ class AdditiveKnapsack:
         self.private = (self.w, self.q, self.r)
 
     def encrypt(self, text):
-        """E(m): для каждого символа представить его как 8 бит, вычислить сумму bi * Ai."""
+        text = text.upper()
         result = []
-        for char in text:
-            bits = format(ord(char), '08b')
-            s = sum(int(bits[i]) * self.public[i] for i in range(8))
+        for ch in text:
+            if ch not in SYMBOL_TO_CODE:
+                raise Exception(f"Недопустимый символ: {ch}")
+            code = SYMBOL_TO_CODE[ch]
+            bits = code_to_5bits(code)  # строка из 5 бит
+            s = sum(int(bits[i]) * self.public[i] for i in range(self.n))
             result.append(str(s))
         return result
 
     def decrypt(self, cipher):
-        """D(c): для каждого числа восстановить биты через обратное преобразование."""
         w, q, r = self.private
         r_inv = modinv(r, q)
-        text = ""
-
+        text = ''
         for num in cipher.split():
             c = (int(num) * r_inv) % q
             bits = []
@@ -137,24 +159,26 @@ class AdditiveKnapsack:
                 else:
                     bits.append('0')
             bits.reverse()
-            text += chr(int(''.join(bits), 2))
-
+            bit_str = ''.join(bits)
+            if len(bit_str) != self.n:
+                raise Exception("Ошибка длины битовой строки")
+            code = bits5_to_code(bit_str)
+            text += CODE_TO_SYMBOL[code]
         return text
 
 
-# ------------------ МУЛЬТИПЛИКАТИВНЫЙ РЮКЗАК (на основе дискретного логарифма) ------------------
-# Модель Σ_MK = <M*, Q, C*, E(m), D(c) | V(...)>
+# ------------------ МУЛЬТИПЛИКАТИВНЫЙ РЮКЗАК ------------------
 class MultiplicativeKnapsack:
     def __init__(self):
-        # Параметры конечного поля (для демонстрации выбраны небольшие)
+        self.n = 5
         self.p = 257
-        self.g = 3   # порождающий элемент (должен быть примитивным корнем, для 257 3 подходит)
+        self.g = 3
 
-    def generate_keys(self, n=8):
-        # Секретная сверхрастущая последовательность s (битовые веса)
+    def generate_keys(self):
+        # Секретная сверхрастущая последовательность s
         self.s = []
         total = 0
-        for _ in range(n):
+        for _ in range(self.n):
             val = total + random.randint(1, 10)
             self.s.append(val)
             total += val
@@ -164,21 +188,23 @@ class MultiplicativeKnapsack:
         self.private = (self.s, self.p, self.g)
 
     def encrypt(self, text):
-        """E(m): для каждого символа c = ∏ A_i^{bit_i} mod p."""
+        text = text.upper()
         result = []
-        for char in text:
-            bits = format(ord(char), '08b')
+        for ch in text:
+            if ch not in SYMBOL_TO_CODE:
+                raise Exception(f"Недопустимый символ: {ch}")
+            code = SYMBOL_TO_CODE[ch]
+            bits = code_to_5bits(code)
             c = 1
-            for i in range(8):
+            for i in range(self.n):
                 if bits[i] == '1':
                     c = (c * self.public[i]) % self.p
             result.append(str(c))
         return result
 
     def decrypt(self, cipher):
-        """D(c): для каждого числа находим дискретный логарифм и решаем сверхрастущий рюкзак."""
         s, p, g = self.private
-        text = ""
+        text = ''
         for num in cipher.split():
             c_int = int(num)
             L = discrete_log(c_int, g, p)
@@ -195,18 +221,18 @@ class MultiplicativeKnapsack:
             if remaining != 0:
                 raise Exception("Ошибка дешифрования: остаток не ноль")
             bits.reverse()
-            text += chr(int(''.join(bits), 2))
+            bit_str = ''.join(bits)
+            code = bits5_to_code(bit_str)
+            text += CODE_TO_SYMBOL[code]
         return text
 
 
-# ------------------ ОБОБЩЕННЫЙ АДДИТИВНЫЙ РЮКЗАК (многозначный алфавит) ------------------
-# Модель Σ_GAK = <M*, Q, C*, E(m), D(c) | V(...)>
+# ------------------ ОБОБЩЁННЫЙ АДДИТИВНЫЙ РЮКЗАК ------------------
 class GeneralAdditive:
     def __init__(self):
-        # Алфавит и его числовые эквиваленты
-        self.alphabet = "0123456789"
-        self.mapping = create_alphabet_mapping(self.alphabet)
-        self.max_q = len(self.alphabet) - 1  # максимальное значение q (0..9)
+        self.alphabet = LATIN_ALPHABET
+        self.mapping = SYMBOL_TO_CODE
+        self.max_q = len(self.alphabet) - 1  # 26
 
     def generate_keys(self, n=16):
         # Сверхрастущая последовательность с учётом max_q
@@ -230,7 +256,7 @@ class GeneralAdditive:
         self.private = (self.w, self.q, self.r, self.mapping, self.max_q)
 
     def encrypt(self, text):
-        """E(m): сообщение длины n → одно число c = ∑ q_i * A_i."""
+        text = text.upper()
         if len(text) != len(self.public):
             raise Exception(f"Длина сообщения должна быть {len(self.public)}")
         c = 0
@@ -239,10 +265,9 @@ class GeneralAdditive:
                 raise Exception(f"Недопустимый символ: {ch}")
             q_val = self.mapping[ch]
             c += q_val * self.public[i]
-        return [str(c)]  # возвращаем список с одним элементом для совместимости с GUI
+        return [str(c)]
 
     def decrypt(self, cipher):
-        """D(c): по одному числу восстанавливаем сообщение."""
         w, q, r, mapping, max_q = self.private
         r_inv = modinv(r, q)
 
@@ -252,7 +277,6 @@ class GeneralAdditive:
         c_int = int(numbers[0])
         c_prime = (c_int * r_inv) % q
 
-        # Жадный алгоритм для обобщённого рюкзака
         q_values = []
         remaining = c_prime
         for wi in reversed(w):
@@ -262,24 +286,21 @@ class GeneralAdditive:
         if remaining != 0:
             raise Exception("Ошибка дешифрования")
 
-        # Обратное отображение чисел в символы
         reverse_mapping = {v: k for k, v in mapping.items()}
         text = ''.join(reverse_mapping[qv] for qv in q_values)
         return text
 
 
-# ------------------ ОБОБЩЕННЫЙ МУЛЬТИПЛИКАТИВНЫЙ РЮКЗАК ------------------
-# Модель Σ_GMK = <M*, Q, C*, E(m), D(c) | V(...)>
+# ------------------ ОБОБЩЁННЫЙ МУЛЬТИПЛИКАТИВНЫЙ РЮКЗАК ------------------
 class GeneralMultiplicative:
     def __init__(self):
-        self.alphabet = "0123456789"
-        self.mapping = create_alphabet_mapping(self.alphabet)
+        self.alphabet = LATIN_ALPHABET
+        self.mapping = SYMBOL_TO_CODE
         self.max_q = len(self.alphabet) - 1
         self.p = 257
         self.g = 3
 
     def generate_keys(self, n=16):
-        # Секретная сверхрастущая последовательность с учётом max_q
         self.s = []
         total = 0
         for _ in range(n):
@@ -287,29 +308,27 @@ class GeneralMultiplicative:
             self.s.append(val)
             total += val
 
-        # Открытый ключ A = g^s mod p
         self.public = [pow(self.g, si, self.p) for si in self.s]
         self.private = (self.s, self.p, self.g, self.mapping, self.max_q)
 
     def encrypt(self, text):
-        """E(m): c = ∏ A_i^{q_i} mod p (одно число)."""
+        text = text.upper()
         if len(text) != len(self.public):
             raise Exception(f"Длина сообщения должна быть {len(self.public)}")
         c = 1
         for i, ch in enumerate(text):
+            if ch not in self.mapping:
+                raise Exception(f"Недопустимый символ: {ch}")
             q_val = self.mapping[ch]
             c = (c * pow(self.public[i], q_val, self.p)) % self.p
         return [str(c)]
 
     def decrypt(self, cipher):
-        """D(c): дискретное логарифмирование + обобщённый сверхрастущий рюкзак."""
         s, p, g, mapping, max_q = self.private
-
         numbers = cipher.split()
         if len(numbers) != 1:
             raise Exception("Ожидается одно число")
         c_int = int(numbers[0])
-
         L = discrete_log(c_int, g, p)
         if L is None:
             raise Exception("Не удалось вычислить дискретный логарифм")
@@ -328,7 +347,80 @@ class GeneralMultiplicative:
         return text
 
 
-# ------------------ GUI (без изменений, только добавлены новые классы) ------------------
+# ------------------ КОД ХЭММИНГА (7,4) ------------------
+class HammingCode:
+    def __init__(self):
+        self.alphabet = LATIN_ALPHABET
+        self.symbol_to_code = SYMBOL_TO_CODE
+        self.code_to_symbol = CODE_TO_SYMBOL
+
+    def generate_keys(self):
+        # Для кода Хэмминга ключи не нужны, но метод должен быть
+        self.public = "Hamming code (7,4)"
+        self.private = "Hamming code (7,4)"
+
+    def _symbols_to_bits(self, text):
+        bits = ''
+        for ch in text:
+            code = self.symbol_to_code[ch]
+            bits += format(code, '05b')
+        return bits
+
+    def _bits_to_symbols(self, bits):
+        if len(bits) % 5 != 0:
+            raise Exception("Длина битовой строки не кратна 5")
+        symbols = ''
+        for i in range(0, len(bits), 5):
+            code = int(bits[i:i+5], 2)
+            symbols += self.code_to_symbol[code]
+        return symbols
+
+    def _encode_block(self, data_bits):
+        # data_bits - строка из 4 бит
+        m = [int(b) for b in data_bits]
+        p1 = m[0] ^ m[1] ^ m[3]
+        p2 = m[0] ^ m[2] ^ m[3]
+        p3 = m[1] ^ m[2] ^ m[3]
+        # порядок: p1, p2, m0, p3, m1, m2, m3
+        return f"{p1}{p2}{m[0]}{p3}{m[1]}{m[2]}{m[3]}"
+
+    def _decode_block(self, code_bits):
+        # code_bits - строка из 7 бит
+        c = [int(b) for b in code_bits]
+        s1 = c[0] ^ c[2] ^ c[4] ^ c[6]
+        s2 = c[1] ^ c[2] ^ c[5] ^ c[6]
+        s3 = c[3] ^ c[4] ^ c[5] ^ c[6]
+        syndrome = (s3 << 2) | (s2 << 1) | s1
+        if syndrome != 0:
+            pos = syndrome - 1
+            if 0 <= pos < 7:
+                c[pos] ^= 1
+        # информационные биты: позиции 2,4,5,6 (0-based)
+        return f"{c[2]}{c[4]}{c[5]}{c[6]}"
+
+    def encrypt(self, text):
+        text = text.upper()
+        if (5 * len(text)) % 4 != 0:
+            raise Exception("Длина сообщения должна быть такой, чтобы 5*len(text) делилось на 4 (например, 4, 8, 12 символов)")
+        bits = self._symbols_to_bits(text)
+        blocks = [bits[i:i+4] for i in range(0, len(bits), 4)]
+        encoded = ''
+        for block in blocks:
+            encoded += self._encode_block(block)
+        return [encoded]
+
+    def decrypt(self, cipher):
+        bits = cipher.strip().replace(' ', '')
+        if len(bits) % 7 != 0:
+            raise Exception("Длина шифртекста должна быть кратна 7")
+        blocks = [bits[i:i+7] for i in range(0, len(bits), 7)]
+        decoded_bits = ''
+        for block in blocks:
+            decoded_bits += self._decode_block(block)
+        return self._bits_to_symbols(decoded_bits)
+
+
+# ------------------ GUI ------------------
 class CryptoApp:
     def __init__(self, root):
         self.root = root
@@ -342,7 +434,8 @@ class CryptoApp:
             "Аддитивный рюкзак": AdditiveKnapsack(),
             "Мультипликативный рюкзак": MultiplicativeKnapsack(),
             "Обобщенный аддитивный": GeneralAdditive(),
-            "Обобщенный мультипликативный": GeneralMultiplicative()
+            "Обобщенный мультипликативный": GeneralMultiplicative(),
+            "Код Хэмминга (7,4)": HammingCode()
         }
 
         self.current_algo = None
@@ -353,7 +446,6 @@ class CryptoApp:
         self.apply_theme()
 
     def setup_theme(self):
-        """Настройка базовых цветов темы"""
         self.themes = {
             "dark": {
                 "bg": "#1a1b26",
@@ -384,7 +476,6 @@ class CryptoApp:
         }
 
     def create_menu(self):
-        """Создание меню приложения"""
         menubar = tk.Menu(self.root)
         self.root.config(menu=menubar)
 
@@ -400,7 +491,6 @@ class CryptoApp:
         view_menu.add_command(label="☀️ Светлая тема", command=lambda: self.change_theme("light"))
 
     def create_styled_button(self, parent, text, command, style="primary"):
-        """Создание стилизованной кнопки"""
         btn = tk.Button(
             parent,
             text=text,
@@ -414,7 +504,6 @@ class CryptoApp:
         return btn
 
     def create_card(self, parent, title, **kwargs):
-        """Создание карточки с заголовком"""
         frame = tk.Frame(parent, **kwargs)
 
         header = tk.Frame(frame, height=40)
@@ -436,7 +525,6 @@ class CryptoApp:
         return frame, content
 
     def build_ui(self):
-        """Создание пользовательского интерфейса"""
         main_container = tk.Frame(self.root)
         main_container.pack(fill="both", expand=True, padx=20, pady=20)
 
@@ -553,7 +641,6 @@ class CryptoApp:
         self.status_bar.pack(side="bottom", fill="x")
 
     def create_text_widget(self, parent, height):
-        """Создание стилизованного текстового поля"""
         text_frame = tk.Frame(parent)
 
         text = tk.Text(
@@ -576,7 +663,6 @@ class CryptoApp:
         return text
 
     def apply_theme(self):
-        """Применение текущей темы"""
         theme = self.themes[self.current_theme]
 
         self.root.configure(bg=theme["bg"])
@@ -636,14 +722,13 @@ class CryptoApp:
         self.update_theme_indicator()
 
     def update_widget_colors(self, widget, theme):
-        """Рекурсивное обновление цветов виджетов"""
         try:
             if isinstance(widget, tk.Frame):
                 widget.configure(bg=theme["bg"])
             elif isinstance(widget, tk.Label):
-                if widget.cget("font") == ("Segoe UI", 24, "bold"):  # Заголовок
+                if widget.cget("font") == ("Segoe UI", 24, "bold"):
                     widget.configure(bg=theme["bg"], fg=theme["accent"])
-                elif widget.cget("font") == ("Segoe UI", 12, "bold"):  # Заголовки карточек
+                elif widget.cget("font") == ("Segoe UI", 12, "bold"):
                     widget.configure(bg=theme["bg"], fg=theme["accent"])
                 else:
                     widget.configure(bg=theme["bg"], fg=theme["text"])
@@ -656,21 +741,17 @@ class CryptoApp:
             self.update_widget_colors(child, theme)
 
     def update_theme_indicator(self):
-        """Обновление индикатора текущей темы в меню"""
         pass
 
     def change_theme(self, theme_name):
-        """Смена темы"""
         self.current_theme = theme_name
         self.apply_theme()
         self.update_status(f"Тема изменена на {theme_name}")
 
     def update_status(self, message):
-        """Обновление статусной строки"""
         self.status_bar.config(text=f"  {message}")
 
     def clear_all(self):
-        """Очистка всех полей"""
         self.public_key_text.delete("1.0", tk.END)
         self.private_key_text.delete("1.0", tk.END)
         self.input_text.delete("1.0", tk.END)
