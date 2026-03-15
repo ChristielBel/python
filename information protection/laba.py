@@ -243,13 +243,14 @@ class MultiplicativeKnapsack:
 
 
 # ------------------ ОБОБЩЁННЫЙ АДДИТИВНЫЙ РЮКЗАК ------------------
+# ------------------ ОБОБЩЁННЫЙ АДДИТИВНЫЙ РЮКЗАК (n=5) ------------------
 class GeneralAdditive:
     def __init__(self):
         self.alphabet = LATIN_ALPHABET
         self.mapping = SYMBOL_TO_CODE
         self.max_q = len(self.alphabet) - 1  # 26
 
-    def generate_keys(self, n=16):
+    def generate_keys(self, n=5):  # <-- изменено на 5
         # Сверхрастущая последовательность с учётом max_q
         self.w = []
         total = 0
@@ -313,23 +314,33 @@ class GeneralAdditive:
         return text
 
 
-# ------------------ ОБОБЩЁННЫЙ МУЛЬТИПЛИКАТИВНЫЙ РЮКЗАК ------------------
+# ------------------ ОБОБЩЁННЫЙ МУЛЬТИПЛИКАТИВНЫЙ РЮКЗАК (n=5, исправлен) ------------------
 class GeneralMultiplicative:
     def __init__(self):
         self.alphabet = LATIN_ALPHABET
         self.mapping = SYMBOL_TO_CODE
-        self.max_q = len(self.alphabet) - 1
-        self.p = 257
-        self.g = 3
+        self.max_q = len(self.alphabet) - 1   # 26
+        self.p = 100000007                     # 1e8+7 – простое
+        self.g = 3                              # пробуем 3
 
-    def generate_keys(self, n=16):
-        self.s = []
-        total = 0
-        for _ in range(n):
-            val = total * self.max_q + random.randint(1, self.max_q * 10)
-            self.s.append(val)
-            total += val
+    def generate_keys(self, n=5):
+        max_attempts = 100
+        for attempt in range(max_attempts):
+            self.s = []
+            total = 0
+            for _ in range(n):
+                # Сильно сверхрастущая: s[i] > max_q * sum(предыдущих)
+                val = total * self.max_q + random.randint(1, self.max_q * 10)
+                self.s.append(val)
+                total += val
 
+            # Проверяем, поместится ли максимальная сумма в p-1
+            if self.max_q * total < self.p - 1:
+                break
+        else:
+            raise Exception("Не удалось сгенерировать подходящую последовательность. Попробуйте ещё раз.")
+
+        # Открытый ключ A = g^s mod p
         self.public = [pow(self.g, si, self.p) for si in self.s]
         self.private = (self.s, self.p, self.g, self.mapping, self.max_q)
 
@@ -355,9 +366,9 @@ class GeneralMultiplicative:
         if len(numbers) != 1:
             raise Exception("Ожидается одно число")
         c_int = int(numbers[0])
-        L = discrete_log(c_int, g, p)
+        L = self._discrete_log_bsgs(c_int, g, p)
         if L is None:
-            raise Exception("Не удалось вычислить дискретный логарифм")
+            raise Exception("Не удалось вычислить дискретный логарифм. Возможно, g не является первообразным корнем. Попробуйте заменить g на 5 или другое число.")
 
         q_values = []
         remaining = L
@@ -371,6 +382,23 @@ class GeneralMultiplicative:
         reverse_mapping = {v: k for k, v in mapping.items()}
         text = ''.join(reverse_mapping[qv] for qv in q_values)
         return text
+
+    def _discrete_log_bsgs(self, c, g, p):
+        """Baby-step giant-step алгоритм дискретного логарифма."""
+        m = int(p**0.5) + 1
+        table = {}
+        e = 1
+        for i in range(m):
+            if e not in table:
+                table[e] = i
+            e = (e * g) % p
+        factor = pow(g, p-1-m, p)   # g^{-m} mod p
+        e = c
+        for i in range(m):
+            if e in table:
+                return i * m + table[e]
+            e = (e * factor) % p
+        return None
 
 
 # ------------------ КОД ХЭММИНГА (7,4) ------------------
@@ -472,7 +500,6 @@ class HammingCode:
         for block in blocks:
             decoded_bits += self._decode_block(block)
         return self._bits_to_symbols(decoded_bits)
-
 
 # ------------------ GUI ------------------
 class CryptoApp:
